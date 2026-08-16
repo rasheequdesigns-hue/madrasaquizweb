@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parammal Madrasa - Rabee'ul Awwal Daily Seerah Quiz</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .gradient-banner {
+            background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #047857 100%);
+        }
+
+        .gold-banner {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%);
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+        }
+
+        .silver-glow {
+            box-shadow: 0 0 15px rgba(148, 163, 184, 0.4);
+        }
+
+        .bronze-glow {
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+        }
+
+        .arabic-font {
+            font-family: 'Amiri', serif;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white bg-slate-50">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
+                <div
+                    class="w-10 h-10 rounded-xl gradient-banner flex items-center justify-center text-amber-300 shadow-md shadow-emerald-700/20">
+                    <i class="fa-solid fa-mosque text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold text-slate-900 tracking-tight"><span class="dyn-madrasa-1">Parammal</span> <span class="text-brand-600 dyn-madrasa-2">Madrasa</span></span>
+                    <span class="dyn-subtitle hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Rabee'ul Awwal Special</span>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+
+
+                <!-- Current User Profile Link Button -->
+                <div id="userInfoHeader" class="hidden flex items-center space-x-2">
+                    <button onclick="switchView('studentDashboard')"
+                        class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors">
+                        <i class="fa-solid fa-circle-user text-emerald-600 text-base"></i>
+                        <span class="text-xs font-bold" id="userHeaderName">Participant Profile</span>
+                    </button>
+                    <button onclick="logoutParticipant()"
+                        class="text-xs text-rose-600 hover:text-rose-700 font-semibold px-2 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200">
+                        <i class="fa-solid fa-sign-out-alt"></i>
+                    </button>
+                </div>
+
+                <!-- Admin Mode Toggle Button -->
+                <button id="navAdminBtn" onclick="openAdminAuth()"
+                    class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center space-x-1.5">
+                    <i class="fa-solid fa-user-shield text-amber-400"></i>
+                    <span id="navAdminBtnText">Admin Access</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Toast Notification Box -->
+        <div id="toast"
+            class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 max-w-md bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 pointer-events-none">
+            <div id="toastIcon" class="text-emerald-400 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+            <div id="toastMsg" class="text-sm font-medium">Notification message here</div>
+        </div>
+
+
+
+        <!-- VIEW: Home / Participant Registration -->
+        <section id="viewHome" class="max-w-3xl mx-auto space-y-6">
+            <!-- Hero Header Card -->
+            <div class="text-center space-y-3 py-4">
+                <div class="text-2xl font-bold text-emerald-800 arabic-font">
+                    بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+                </div>
+                <span
+                    class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                    <i class="fa-solid fa-star-and-crescent mr-1.5 text-amber-600"></i> <span class="dyn-subtitle">Rabee'ul Awwal Seerah Quiz Series</span> • <span class="dyn-madrasa-full">Parammal Madrasa</span>
+                </span>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                    Prophet Muhammad <span class="text-brand-600">ﷺ</span> Seerah Competition
+                </h1>
+                <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+                    Join <span class="dyn-madrasa-full">Parammal Madrasa</span>'s grand daily quiz celebrating the life, character, and legacy of Prophet
+                    Muhammad ﷺ. Build your student profile and earn badges!
+                </p>
+            </div>
+
+            <!-- Participant Registration Form Card -->
+            <div id="loginFormSection">
+                <div id="participantAuthCard"
+                class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-emerald-100 space-y-5 relative overflow-hidden">
+                <div
+                    class="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 rounded-full bg-emerald-50 pointer-events-none flex items-center justify-center opacity-60">
+                    <i class="fa-solid fa-kaaba text-4xl text-emerald-200"></i>
+                </div>
+
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-id-card-clip text-brand-600 mr-2"></i> Participant Login & Profile Access
+                    </h2>
+                    <p class="text-xs text-slate-500">Enter your details to take today's quiz or inspect your full
+                        student profile</p>
+                </div>
+
+                <form onsubmit="handleParticipantLogin(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full
+                                Name *</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                                <input type="text" id="inputStudentName" required placeholder="e.g. Muhammed Ameen"
+                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Phone
+                                Number (Unique ID) *</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-phone absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                                <input type="tel" id="inputStudentPhone" required placeholder="9876543210"
+                                    pattern="[0-9]{10,12}" title="Please enter a valid 10-digit phone number"
+                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <!-- Date Selection for Quiz -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select
+                                Quiz Date</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-calendar-day absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                                <input type="date" id="inputQuizDate"
+                                    class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                        <button type="submit"
+                            class="flex-1 py-3 px-4 rounded-xl gradient-banner text-white font-bold text-sm shadow-lg shadow-emerald-600/25 hover:opacity-95 transition-all flex items-center justify-center space-x-2">
+                            <span>Attempt Selected Quiz</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button type="button" onclick="viewMyHistoryDirectly()"
+                            class="py-3 px-5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-sm transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-user-gear text-amber-600"></i>
+                            <span>View My Full Profile</span>
+                        </button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden hidden" id="welcomeBackSection">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Welcome back, <span id="welcomeBackName"></span>!</h2>
+                    <p class="text-slate-500 mb-6">You are signed in. Select a quiz from below to attempt, or view your profile history.</p>
+                    <button type="button" onclick="switchView('studentDashboard')" class="w-full sm:w-auto py-3 px-6 rounded-xl gradient-banner text-white font-bold text-sm shadow-lg shadow-emerald-600/25 hover:opacity-95 transition-all">
+                        <i class="fa-solid fa-circle-user mr-2"></i> Go To Profile Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Today's Quiz Highlight Box -->
+            <div
+                class="gradient-banner rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-500/30 relative overflow-hidden">
+                <div class="space-y-1 text-center sm:text-left z-10">
+                    <div
+                        class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-md text-amber-200 border border-white/20">
+                        <i class="fa-solid fa-clock mr-1"></i> Today's Featured Seerah Challenge
+                    </div>
+                    <h3 class="text-xl font-bold" id="featuredQuizTitle">Loading Today's Seerah Quiz...</h3>
+                    <p class="text-xs text-emerald-100" id="featuredQuizMeta">Questions ready for Rabee'ul Awwal</p>
+                </div>
+                <button onclick="selectTodayQuiz()"
+                    class="z-10 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-xl font-bold text-sm shadow-md transition-all whitespace-nowrap flex items-center space-x-1.5">
+                    <span>Start Today's Quiz</span>
+                    <i class="fa-solid fa-bolt"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW: Interactive Quiz Player -->
+        <section id="viewQuizPlayer" class="hidden max-w-3xl mx-auto space-y-6">
+            <!-- Top Quiz Banner -->
+            <div
+                class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span id="quizDateBadge"
+                            class="px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-700 text-xs font-bold">2026-08-16</span>
+                        <span id="quizTotalQuestionsBadge"
+                            class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">5
+                            Questions</span>
+                    </div>
+                    <h2 id="quizPlayerTitle" class="text-2xl font-bold text-slate-900 mt-1">General Knowledge Daily
+                        Challenge</h2>
+                </div>
+
+                <!-- Timer Box -->
+                <div
+                    class="flex items-center space-x-3 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-amber-800">
+                    <i class="fa-solid fa-stopwatch text-xl text-amber-600 animate-pulse"></i>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Time Remaining</div>
+                        <div id="quizTimer" class="text-xl font-extrabold font-mono text-amber-900">10:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Progress Bar -->
+            <div class="bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                <div id="quizProgressBar" class="bg-brand-600 h-full transition-all duration-300 w-0"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="questionContainer"
+                class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-100 space-y-6">
+                <!-- Question Header -->
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <span id="questionNumberIndicator"
+                        class="text-xs font-bold text-brand-600 uppercase tracking-wider">Question 1 of 5</span>
+                    <span id="questionMarksIndicator"
+                        class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">+2
+                        Marks</span>
+                </div>
+
+                <!-- Question Text -->
+                <h3 id="questionText" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+                    Question loading...
+                </h3>
+
+                <!-- Options List -->
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Dynamic option buttons inserted via JS -->
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <button id="btnPrevQuestion" onclick="navigateQuestion(-1)"
+                        class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors disabled:opacity-40">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Previous
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button id="btnNextQuestion" onclick="navigateQuestion(1)"
+                            class="px-5 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition-colors shadow-md">
+                            Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                        <button id="btnSubmitQuiz" onclick="confirmSubmitQuiz()"
+                            class="hidden px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-md shadow-emerald-500/20">
+                            Submit Quiz <i class="fa-solid fa-paper-plane ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Quiz Result & Score Screen -->
+        <section id="viewQuizResult" class="hidden max-w-2xl mx-auto text-center space-y-6">
+            <div class="bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-100 relative overflow-hidden">
+                <!-- Decorative Top Gradient Bar -->
+                <div class="absolute top-0 left-0 right-0 h-3 gradient-banner"></div>
+
+                <div
+                    class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-4xl shadow-inner mb-4">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+
+                <span
+                    class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Seerah
+                    Quiz Completed</span>
+                <h2 class="text-3xl font-extrabold text-slate-900 mt-2">Masha Allah! Great Job</h2>
+                <p class="text-sm text-slate-500 mt-1" id="resultParticipantName">John Doe</p>
+
+                <!-- Score Big Metric Box -->
+                <div class="my-6 py-6 px-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 max-w-sm mx-auto">
+                    <div class="text-xs font-bold text-emerald-800 uppercase tracking-widest">Your Final Score</div>
+                    <div class="text-5xl font-extrabold text-brand-700 my-1">
+                        <span id="resultScore">0</span> / <span id="resultTotalPossible">0</span>
+                    </div>
+                    <div class="text-xs font-semibold text-emerald-800" id="resultPercentageText">Accuracy: 0%</div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 pt-2">
+                    <button onclick="switchView('studentDashboard')"
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Open My Profile & Performance</span>
+                    </button>
+                    <button onclick="switchView('home')"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+                        <i class="fa-solid fa-house mr-1.5"></i> Back to Home
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Comprehensive Participant Profile Hub & History -->
+        <section id="viewStudentDashboard" class="hidden space-y-6 max-w-5xl mx-auto">
+            <!-- Full Profile Header Card -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-emerald-100 relative overflow-hidden">
+                <div
+                    class="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full -mr-16 -mt-16 pointer-events-none opacity-50">
+                </div>
+
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-20 h-20 rounded-2xl gradient-banner text-amber-300 font-extrabold text-3xl flex items-center justify-center shadow-lg shadow-emerald-700/20 border-2 border-emerald-300">
+                            <span id="studentAvatarLetter">P</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <h2 class="text-2xl font-extrabold text-slate-900" id="dashStudentName">Participant Name
+                                </h2>
+                            </div>
+                            <div class="text-xs text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <span><i class="fa-solid fa-phone mr-1 text-brand-600"></i> <span
+                                        id="dashStudentPhone">Phone</span></span>
+                                <span><i class="fa-solid fa-building-columns mr-1 text-emerald-600"></i> <span class="dyn-madrasa-full">Parammal Madrasa</span></span>
+                                <span><i class="fa-solid fa-calendar mr-1 text-amber-600"></i> <span class="dyn-subtitle">Rabee'ul Awwal Season</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+                        <button onclick="switchView('home')"
+                            class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center space-x-1.5">
+                            <i class="fa-solid fa-play text-xs"></i>
+                            <span>Take Quiz</span>
+                        </button>
+                        <button onclick="logoutParticipant()"
+                            class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition-all">
+                            <i class="fa-solid fa-sign-out-alt mr-1"></i> Exit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Profile Stats Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-center">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Total Points
+                        </div>
+                        <div class="text-2xl font-extrabold text-emerald-700" id="dashTotalScore">0</div>
+                        <div class="text-[11px] text-slate-500 font-medium">Earned Marks</div>
+                    </div>
+
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-center">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Madrasa Rank
+                        </div>
+                        <div class="text-2xl font-extrabold text-amber-600" id="dashRankBadge">#--</div>
+                        <div class="text-[11px] text-slate-500 font-medium" id="dashRankSubtext">Leaderboard Rank</div>
+                    </div>
+
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-center">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Overall
+                            Accuracy</div>
+                        <div class="text-2xl font-extrabold text-brand-600" id="dashAccuracy">0%</div>
+                        <div class="text-[11px] text-slate-500 font-medium" id="dashAttemptsCount">0 Quizzes</div>
+                    </div>
+
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-center">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Current Streak
+                        </div>
+                        <div class="text-2xl font-extrabold text-orange-600" id="dashStreak">0 Days</div>
+                        <div class="text-[11px] text-slate-500 font-medium">Daily Participation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Badges & Milestones Section -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-emerald-100 space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center justify-between">
+                    <span class="flex items-center"><i class="fa-solid fa-ribbon text-amber-500 mr-2 text-base"></i>
+                        Seerah Achievements & Badges</span>
+                    <span class="text-xs text-slate-400 font-normal" id="badgesCountText">0 Badges Unlocked</span>
+                </h3>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="profileBadgesContainer">
+                    <!-- Dynamic badges rendered here -->
+                </div>
+            </div>
+
+            <!-- Quiz Submissions Grid & Detailed Review -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: List of Quizzes Attempted -->
+                <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-md border border-slate-100 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-history text-brand-600 mr-2"></i> Attempted Seerah Quizzes
+                    </h3>
+                    <div id="studentQuizHistoryList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+
+                <!-- Right: Detailed Question Breakdown for Selected Quiz -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-md border border-slate-100 space-y-5">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900" id="reviewQuizTitle">Select a quiz to review
+                            </h3>
+                            <p class="text-xs text-slate-500" id="reviewQuizMeta">Question by question analysis</p>
+                        </div>
+                        <span id="reviewQuizScoreBadge"
+                            class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">
+                            Score: -/-
+                        </span>
+                    </div>
+
+                    <div id="reviewQuestionsContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        <div class="text-center py-12 text-slate-400 text-xs">
+                            <i class="fa-solid fa-book-open-reader text-3xl mb-2 text-slate-300"></i>
+                            <p>Select any attempted quiz from the left list to review detailed marks and correct
+                                options.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Admin Panel View -->
+        <section id="viewAdmin" class="hidden space-y-6">
+            <!-- Admin Header -->
+            <div
+                class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center text-xl text-white shadow-md">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold tracking-tight">Admin Control Dashboard</h2>
+                        <p class="text-xs text-slate-400">Manage daily questions, inspect participant scores, and
+                            highlight winners</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="openCreateQuizModal()"
+                        class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-md transition-all">
+                        <i class="fa-solid fa-plus-circle mr-1.5"></i> Add Daily Quiz
+                    </button>
+                    <button onclick="exportParticipantsData()"
+                        class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-all">
+                        <i class="fa-solid fa-download mr-1.5"></i> Export CSV
+                    </button>
+                    <button onclick="exitAdminView()"
+                        class="px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl text-xs font-semibold border border-rose-500/30 transition-all">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Exit Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Navigation Tabs -->
+            <div class="flex space-x-2 border-b border-slate-200 pb-1">
+                <button onclick="switchAdminTab('leaderboard')" id="tabBtnLeaderboard"
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all">
+                    <i class="fa-solid fa-trophy mr-1.5"></i> Leaderboard & High Marks
+                </button>
+                <button onclick="switchAdminTab('quizzes')" id="tabBtnQuizzes"
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-list-check mr-1.5"></i> Daily Questions & Links
+                </button>
+                <button onclick="switchAdminTab('students')" id="tabBtnStudents"
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-users mr-1.5"></i> All Participants Data
+                </button>
+                <button onclick="switchAdminTab('settings')" id="tabBtnSettings"
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-gear mr-1.5"></i> Settings
+                </button>
+                <button onclick="switchAdminTab('users')" id="tabBtnUsers"
+                    class="px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-address-book mr-1.5"></i> Registered Users
+                </button>
+            </div>
+
+            <!-- TAB 1: LEADERBOARD & HIGHLIGHT TOP MARKS -->
+            <div id="adminTabLeaderboard" class="space-y-6">
+                <!-- Filter Bar for Leaderboard -->
+                <div
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-filter text-brand-600 mr-2"></i> Filter Rankings By:
+                    </div>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <select id="leaderboardDateFilter" onchange="renderLeaderboard()"
+                            class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">All-Time Cumulative</option>
+                            <!-- Dynamic quiz dates inserted -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Top 3 Podium Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="podiumContainer">
+                    <!-- Dynamic Podium Cards (Gold, Silver, Bronze) -->
+                </div>
+
+                <!-- Complete Ranked Leaderboard Table -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center">
+                            <i class="fa-solid fa-ranking-star text-amber-500 mr-2"></i> Complete Leaderboard (Ranked
+                            Top to Bottom)
+                        </h3>
+                        <span class="text-xs text-slate-400" id="leaderboardCountText">0 participants</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">Rank</th>
+                                    <th class="py-3 px-4">Participant Name</th>
+                                    <th class="py-3 px-4">Phone Number</th>
+                                    <th class="py-3 px-4">Total Score</th>
+                                    <th class="py-3 px-4">Accuracy</th>
+                                    <th class="py-3 px-4">Quizzes Taken</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardTableBody" class="divide-y divide-slate-100 text-xs">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: DAILY QUIZZES & SHAREABLE LINKS -->
+            <div id="adminTabQuizzes" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900">Configured Daily Questions</h3>
+                    <button onclick="openCreateQuizModal()"
+                        class="px-3.5 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700">
+                        <i class="fa-solid fa-plus mr-1"></i> New Daily Quiz
+                    </button>
+                </div>
+
+                <div id="adminQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic Quizzes Cards -->
+                </div>
+            </div>
+
+            <!-- TAB 3: ALL PARTICIPANTS DATA TABLE -->
+            <div id="adminTabStudents" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900">All Student Records & Detailed Submissions</h3>
+                        <input type="text" id="searchParticipantInput" onkeyup="filterParticipantTable()"
+                            placeholder="Search name or phone..."
+                            class="px-3 py-1 text-xs rounded-lg border border-slate-300 w-48">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">Participant Name</th>
+                                    <th class="py-3 px-4">Phone</th>
+                                    <th class="py-3 px-4">Quiz Date</th>
+                                    <th class="py-3 px-4">Score / Possible</th>
+                                    <th class="py-3 px-4">Time Taken</th>
+                                    <th class="py-3 px-4">Date Completed</th>
+                                    <th class="py-3 px-4 text-right">Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsSubmissionsTableBody" class="divide-y divide-slate-100 text-xs">
+                                <!-- Dynamic submissions -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- TAB 4: SETTINGS -->
+            <div id="adminTabSettings" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900">Application Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Madrasa Name</label>
+                            <input type="text" id="settingMadrasaName" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Event Subtitle</label>
+                            <input type="text" id="settingSubtitle" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">New Admin Passcode</label>
+                            <input type="text" id="settingAdminPasscode" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <button onclick="saveAdminSettings()" class="mt-4 px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-md transition-colors">
+                        Save Settings
+                    </button>
+                </div>
+            </div>
+            <!-- TAB 5: REGISTERED USERS -->
+            <div id="adminTabUsers" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-900 mb-4">All Registered Users</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="border-b-2 border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Name</th>
+                                    <th class="py-3 px-4">Phone</th>
+                                    <th class="py-3 px-4">Registered At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registeredUsersTableBody" class="text-sm divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal: Add / Edit Daily Quiz -->
+        <div id="quizFormModal"
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                <button onclick="closeCreateQuizModal()"
+                    class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <h3 class="text-lg font-bold text-slate-900 mb-1" id="quizModalTitle">Create Daily Quiz</h3>
+                <p class="text-xs text-slate-500 mb-4">Add questions and assign to a specific date for participants</p>
+
+                <form onsubmit="handleSaveQuiz(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Quiz
+                                Topic Title</label>
+                            <input type="text" id="formQuizTitle" required
+                                placeholder="e.g. Science & Technology Daily Quiz"
+                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Quiz
+                                Date</label>
+                            <input type="date" id="formQuizDate" required
+                                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Questions Creator Section -->
+                    <div class="border-t border-slate-200 pt-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Questions List</h4>
+                            <button type="button" onclick="addQuestionField()"
+                                class="px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-600 border border-brand-200 rounded-lg text-xs font-semibold">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Question
+                            </button>
+                        </div>
+
+                        <div id="formQuestionsContainer" class="space-y-4">
+                            <!-- Dynamic question builder blocks -->
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-4 flex items-center justify-end space-x-2">
+                        <button type="button" onclick="closeCreateQuizModal()"
+                            class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-md">
+                            Save Daily Quiz
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Admin Passcode Login -->
+        <div id="adminAuthModal"
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative text-center space-y-4">
+                <div
+                    class="w-12 h-12 rounded-full bg-slate-100 text-slate-800 mx-auto flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Admin Authentication</h3>
+                    <p class="text-xs text-slate-500">Enter Admin Passcode to access management panel</p>
+                </div>
+
+                <div>
+                    <input type="password" id="adminPasscodeInput" placeholder="Enter Admin Passcode"
+                        class="w-full px-3 py-2 text-center text-sm font-bold tracking-widest rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="flex space-x-2">
+                    <button onclick="closeAdminAuthModal()"
+                        class="w-1/2 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                    <button onclick="verifyAdminPasscode()"
+                        class="w-1/2 py-2 text-xs font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800">Login
+                        Admin</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div
+            class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>&copy; 2026 DailyQuiz Pro. Daily Interactive Quiz Management Platform.</span>
+            <div class="flex items-center space-x-4">
+                <a href="#" onclick="openAdminAuth(); return false;" class="hover:text-slate-600">Admin Panel</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // APPLICATION INITIALIZATION & GLOBAL STATE
+        // ==========================================
+        const MOCK_STORAGE_KEY_QUIZZES = 'dailyquiz_quizzes_v2';
+        const MOCK_STORAGE_KEY_SUBMISSIONS = 'dailyquiz_submissions_v2';
+        const SUPABASE_CONFIG_KEY = 'dailyquiz_supabase_cfg';
+
+        let appState = {
+            participants: [],
+            appSettings: { adminPasscode: 'admin123', madrasaName: 'Parammal Madrasa', eventSubtitle: 'Rabee\'ul Awwal Special' },
+            currentView: 'home', // home, quizPlayer, quizResult, studentDashboard, admin
+            adminAuthenticated: false,
+            currentStudent: null, // { name, phone }
+            activeQuiz: null,
+            activeQuestionIndex: 0,
+            userAnswers: {}, // { questionId: selectedIndex }
+            quizTimerInterval: null,
+            timeSpentSeconds: 0,
+            selectedReviewQuizId: null,
+            supabaseClient: null,
+            isLiveSupabase: false,
+            quizzes: [],
+            submissions: []
+        };
+
+        // Default Sample Quizzes on Prophet Muhammad ﷺ Seerah (Rabee'ul Awwal)
+        const DEFAULT_QUIZZES = [];
+
+        // Sample Submissions
+        const DEFAULT_SUBMISSIONS = [];
+
+        // ==========================================
+        // INITIALIZATION & URL QUERY PARSER
+        // ==========================================
+        function checkLoginSection() {
+            const loginForm = document.getElementById('loginFormSection');
+            const welcomeBack = document.getElementById('welcomeBackSection');
+            if(appState.currentStudent) {
+                if(loginForm) loginForm.classList.add('hidden');
+                if(welcomeBack) {
+                    welcomeBack.classList.remove('hidden');
+                    document.getElementById('welcomeBackName').innerText = appState.currentStudent.name;
+                }
+            } else {
+                if(loginForm) loginForm.classList.remove('hidden');
+                if(welcomeBack) welcomeBack.classList.add('hidden');
+            }
+        }
+
+        window.onload = async function () {
+            const savedUser = localStorage.getItem('currentUser');
+            if(savedUser) {
+                try {
+                    appState.currentStudent = JSON.parse(savedUser);
+                    updateHeaderUserInfo();
+                } catch(e) {}
+            }
+            // Set today's date into date inputs
+            const todayStr = getTodayDateString();
+            document.getElementById('inputQuizDate').value = todayStr;
+
+            // Load Supabase Config or Local Mock Data
+            initSupabaseClient();
+            await loadData();
+
+            // Check if URL has share link parameters (e.g. ?date=2026-08-16)
+            const urlParams = new URLSearchParams(window.location.search);
+            const dateParam = urlParams.get('date');
+            if (dateParam) {
+                document.getElementById('inputQuizDate').value = dateParam;
+                showToast(`Loaded question link for date: ${dateParam}`, 'info');
+            }
+
+            // Populate today's banner info
+            updateFeaturedQuizBanner();
+        };
+
+        function updateDynamicUI() {
+            if(!appState.appSettings) return;
+            const madrasaName = appState.appSettings.madrasaName || appState.appSettings.madrasaname || 'Parammal Madrasa';
+            const eventSubtitle = appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || "Rabee'ul Awwal Special";
+            const parts = madrasaName.split(' ');
+            const p1 = parts[0] || '';
+            const p2 = parts.slice(1).join(' ') || '';
+
+            document.querySelectorAll('.dyn-madrasa-1').forEach(el => el.innerText = p1);
+            document.querySelectorAll('.dyn-madrasa-2').forEach(el => el.innerText = p2);
+            document.querySelectorAll('.dyn-madrasa-full').forEach(el => el.innerText = madrasaName);
+            document.querySelectorAll('.dyn-subtitle').forEach(el => el.innerText = eventSubtitle);
+        }
+
+        async function saveAdminSettings() {
+            const madrasaName = document.getElementById('settingMadrasaName').value.trim();
+            const eventSubtitle = document.getElementById('settingSubtitle').value.trim();
+            const adminPasscode = document.getElementById('settingAdminPasscode').value.trim();
+
+            if(!madrasaName || !adminPasscode) {
+                showToast('Name and Passcode are required.', 'error');
+                return;
+            }
+
+            const newSettings = { id: 1, madrasaName, eventSubtitle, adminPasscode };
+            
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                const dbPayload = { id: 1, madrasaname: madrasaName, eventsubtitle: eventSubtitle, adminpasscode: adminPasscode };
+                const { error } = await appState.supabaseClient.from('app_settings').upsert(dbPayload);
+                if (error) {
+                    showToast('Failed to save to Supabase', 'error');
+                    console.error(error);
+                    return;
+                }
+            }
+
+            appState.appSettings = { ...appState.appSettings, ...newSettings };
+            updateDynamicUI();
+            showToast('Settings Saved!', 'success');
+        }
+
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ==========================================
+        // SUPABASE & DATA SYNC HANDLERS
+        // ==========================================
+        function initSupabaseClient() {
+            appState.supabaseClient = window.supabase.createClient('https://qpgnzgowqjvdpkxrdect.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZ256Z293cWp2ZHBreHJkZWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NzEyNjUsImV4cCI6MjEwMjQ0NzI2NX0.m7v9Qp_DI2RuIJ9VnQJiFAm5H51NMM9bHgfL_cCTSqM');
+            appState.isLiveSupabase = true;
+        }
+
+        async function loadData() {
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                try {
+                    const { data: qData, error: qErr } = await appState.supabaseClient.from('quizzes').select('*');
+                    if (!qErr && qData) {
+                        appState.quizzes = qData.map(item => typeof item.data === 'string' ? JSON.parse(item.data) : item.data);
+                    }
+
+                    const { data: sData, error: sErr } = await appState.supabaseClient.from('submissions').select('*');
+                    
+                    const { data: pData, error: pErr } = await appState.supabaseClient.from('participants').select('*');
+                    if (!pErr && pData) {
+                        appState.participants = pData;
+                    }
+                    
+                    const { data: setts, error: settsErr } = await appState.supabaseClient.from('app_settings').select('*').limit(1);
+                    if (!settsErr && setts && setts.length > 0) {
+                        appState.appSettings = setts[0];
+                    }
+                    updateDynamicUI();
+                    if (!sErr && sData) {
+                        appState.submissions = sData.map(item => typeof item.data === 'string' ? JSON.parse(item.data) : item.data);
+                    }
+                } catch (e) {
+                    console.warn("Supabase fetch failed, falling back to local storage", e);
+                    loadLocalData();
+                }
+            } else {
+                loadLocalData();
+            }
+
+            updateFeaturedQuizBanner();
+            if (appState.currentView === 'admin') renderAdminView();
+        }
+
+        function loadLocalData() {
+            const rawQ = localStorage.getItem(MOCK_STORAGE_KEY_QUIZZES);
+            appState.quizzes = rawQ ? JSON.parse(rawQ) : DEFAULT_QUIZZES;
+
+            const rawS = localStorage.getItem(MOCK_STORAGE_KEY_SUBMISSIONS);
+            appState.submissions = rawS ? JSON.parse(rawS) : DEFAULT_SUBMISSIONS;
+        }
+
+        async function saveData() {
+            localStorage.setItem(MOCK_STORAGE_KEY_QUIZZES, JSON.stringify(appState.quizzes));
+            localStorage.setItem(MOCK_STORAGE_KEY_SUBMISSIONS, JSON.stringify(appState.submissions));
+
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                try {
+                    for (const q of appState.quizzes) {
+                        await appState.supabaseClient.from('quizzes').upsert({ id: q.id, data: q });
+                    }
+                    for (const s of appState.submissions) {
+                        await appState.supabaseClient.from('submissions').upsert({ id: s.id, data: s });
+                    }
+                } catch (e) {
+                    console.error("Supabase upsert error", e);
+                }
+            }
+        }
+
+
+
+        // ==========================================
+        // UI VIEW SWITCHING & ROUTING
+        // ==========================================
+        async function registerUser(name, phone) {
+            appState.currentStudent = { name, phone };
+            localStorage.setItem('currentUser', JSON.stringify({ name, phone }));
+            updateHeaderUserInfo();
+            
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                const userObj = { phone, name }; // phone is the PK in the table schema we will propose
+                await appState.supabaseClient.from('participants').upsert(userObj, { onConflict: 'phone' });
+            }
+        }
+
+        function renderRegisteredUsers() {
+            const tbody = document.getElementById('registeredUsersTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            appState.participants.forEach(p => {
+                const tr = document.createElement('tr');
+                const regDate = p.created_at ? new Date(p.created_at).toLocaleString() : 'N/A';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-700">${p.name}</td>
+                    <td class="py-3 px-4">${p.phone}</td>
+                    <td class="py-3 px-4 text-slate-500">${regDate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function switchView(viewName) {
+            const views = ['viewHome', 'viewQuizPlayer', 'viewQuizResult', 'viewStudentDashboard', 'viewAdmin'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+
+            if (viewName === 'home') {
+                document.getElementById('viewHome').classList.remove('hidden');
+            } else if (viewName === 'quizPlayer') {
+                document.getElementById('viewQuizPlayer').classList.remove('hidden');
+            } else if (viewName === 'quizResult') {
+                document.getElementById('viewQuizResult').classList.remove('hidden');
+            } else if (viewName === 'studentDashboard') {
+                document.getElementById('viewStudentDashboard').classList.remove('hidden');
+                renderStudentDashboard();
+            } else if (viewName === 'admin') {
+                document.getElementById('viewAdmin').classList.remove('hidden');
+                renderAdminView();
+            }
+
+            appState.currentView = viewName;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function logoutParticipant() {
+            appState.currentStudent = null;
+            appState.selectedReviewQuizId = null;
+            updateHeaderUserInfo();
+            switchView('home');
+            showToast('Logged out of student profile', 'info');
+        }
+
+        function updateFeaturedQuizBanner() {
+            const todayStr = getTodayDateString();
+            const todayQuiz = appState.quizzes.find(q => q.date === todayStr) || appState.quizzes[0];
+            const titleEl = document.getElementById('featuredQuizTitle');
+            const metaEl = document.getElementById('featuredQuizMeta');
+
+            if (todayQuiz && titleEl && metaEl) {
+                titleEl.innerText = todayQuiz.title;
+                metaEl.innerText = `${todayQuiz.date} • ${todayQuiz.questions ? todayQuiz.questions.length : 0} Seerah Questions`;
+            }
+        }
+
+        function selectTodayQuiz() {
+            const todayStr = getTodayDateString();
+            document.getElementById('inputQuizDate').value = todayStr;
+            const nameInput = document.getElementById('inputStudentName');
+            if (!nameInput.value.trim()) {
+                nameInput.focus();
+                showToast('Please enter your name and phone number to start', 'info');
+            } else {
+                handleParticipantLogin(new Event('submit'));
+            }
+        }
+
+        async function handleParticipantLogin(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const name = document.getElementById('inputStudentName').value.trim();
+            const phone = document.getElementById('inputStudentPhone').value.trim();
+            const dateSelected = document.getElementById('inputQuizDate').value;
+
+            if (!name || !phone) {
+                showToast('Please provide your name and phone number', 'error');
+                return;
+            }
+
+            await registerUser(name, phone);
+            checkLoginSection();
+
+            const quiz = appState.quizzes.find(q => q.date === dateSelected);
+            if (!quiz) {
+                showToast(`No quiz scheduled for ${dateSelected}. Showing your profile instead.`, 'info');
+                switchView('studentDashboard');
+                return;
+            }
+
+            const existingSub = appState.submissions.find(s => s.participantPhone === phone && s.quizDate === dateSelected);
+            if (existingSub) {
+                showToast('You have already submitted answers for this quiz date. Opening your profile history.', 'info');
+                appState.selectedReviewQuizId = existingSub.quizId;
+                switchView('studentDashboard');
+                return;
+            }
+
+            startQuiz(quiz);
+        }
+
+        async function viewMyHistoryDirectly() {
+            const name = document.getElementById('inputStudentName').value.trim();
+            const phone = document.getElementById('inputStudentPhone').value.trim();
+
+            if (!phone) {
+                showToast('Please enter your Phone Number to access your profile', 'info');
+                document.getElementById('inputStudentPhone').focus();
+                return;
+            }
+
+            appState.currentStudent = { name: name || 'Participant', phone };
+            updateHeaderUserInfo();
+            switchView('studentDashboard');
+        }
+
+        function updateHeaderUserInfo() {
+            if (appState.currentStudent) {
+                document.getElementById('userHeaderName').innerText = appState.currentStudent.name;
+                document.getElementById('userInfoHeader').classList.remove('hidden');
+            } else {
+                document.getElementById('userInfoHeader').classList.add('hidden');
+            }
+        }
+
+        function startQuiz(quiz) {
+            appState.activeQuiz = quiz;
+            appState.activeQuestionIndex = 0;
+            appState.userAnswers = {};
+            appState.timeSpentSeconds = 0;
+
+            document.getElementById('quizPlayerTitle').innerText = quiz.title;
+            document.getElementById('quizDateBadge').innerText = quiz.date;
+            document.getElementById('quizTotalQuestionsBadge').innerText = `${quiz.questions.length} Questions`;
+
+            renderQuestion();
+            switchView('quizPlayer');
+            startQuizTimer(10 * 60);
+        }
+
+        function startQuizTimer(duration) {
+            if (appState.quizTimerInterval) clearInterval(appState.quizTimerInterval);
+            let timer = duration;
+            const timerDisplay = document.getElementById('quizTimer');
+
+            appState.quizTimerInterval = setInterval(() => {
+                appState.timeSpentSeconds++;
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+                if (timerDisplay) timerDisplay.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (--timer < 0) {
+                    clearInterval(appState.quizTimerInterval);
+                    showToast('Time is up! Submitting quiz automatically...', 'info');
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const quiz = appState.activeQuiz;
+            const index = appState.activeQuestionIndex;
+            const question = quiz.questions[index];
+
+            document.getElementById('questionNumberIndicator').innerText = `Question ${index + 1} of ${quiz.questions.length}`;
+            document.getElementById('questionMarksIndicator').innerText = `+${question.marks || 2} Marks`;
+            document.getElementById('questionText').innerText = question.text;
+
+            const progressPct = ((index + 1) / quiz.questions.length) * 100;
+            document.getElementById('quizProgressBar').style.width = `${progressPct}%`;
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((opt, optIdx) => {
+                const isSelected = appState.userAnswers[question.id] === optIdx;
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border text-sm font-medium transition-all flex items-center justify-between ${isSelected
+                        ? 'border-brand-600 bg-brand-50 text-brand-900 ring-2 ring-brand-500/20 font-bold'
+                        : 'border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700'
+                    }`;
+
+                btn.onclick = () => selectOption(question.id, optIdx);
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg ${isSelected ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'} text-xs font-bold flex items-center justify-center">
+                            ${String.fromCharCode(65 + optIdx)}
+                        </span>
+                        <span>${opt}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-brand-600 text-lg"></i>' : ''}
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('btnPrevQuestion').disabled = index === 0;
+            if (index === quiz.questions.length - 1) {
+                document.getElementById('btnNextQuestion').classList.add('hidden');
+                document.getElementById('btnSubmitQuiz').classList.remove('hidden');
+            } else {
+                document.getElementById('btnNextQuestion').classList.remove('hidden');
+                document.getElementById('btnSubmitQuiz').classList.add('hidden');
+            }
+        }
+
+        function selectOption(qId, optIdx) {
+            appState.userAnswers[qId] = optIdx;
+            renderQuestion();
+        }
+
+        function navigateQuestion(dir) {
+            const newIdx = appState.activeQuestionIndex + dir;
+            if (newIdx >= 0 && newIdx < appState.activeQuiz.questions.length) {
+                appState.activeQuestionIndex = newIdx;
+                renderQuestion();
+            }
+        }
+
+        function confirmSubmitQuiz() {
+            const unanswered = appState.activeQuiz.questions.filter(q => appState.userAnswers[q.id] === undefined);
+            if (unanswered.length > 0) {
+                if (!confirm(`You have ${unanswered.length} unanswered questions. Are you sure you want to submit?`)) {
+                    return;
+                }
+            }
+            submitQuiz();
+        }
+
+        function renderStudentDashboard() {
+            if (!appState.currentStudent) return;
+
+            const phone = appState.currentStudent.phone;
+            document.getElementById('dashStudentName').innerText = appState.currentStudent.name;
+            document.getElementById('dashStudentPhone').innerText = appState.currentStudent.phone;
+            document.getElementById('studentAvatarLetter').innerText = appState.currentStudent.name.charAt(0).toUpperCase();
+
+            const mySubs = appState.submissions.filter(s => s.participantPhone === phone);
+            const totalScore = mySubs.reduce((acc, curr) => acc + curr.score, 0);
+            const totalPossible = mySubs.reduce((acc, curr) => acc + curr.totalPossible, 0);
+            const accuracy = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+
+            document.getElementById('dashTotalScore').innerText = totalScore;
+            document.getElementById('dashAccuracy').innerText = `${accuracy}%`;
+            document.getElementById('dashAttemptsCount').innerText = `${mySubs.length} Quizzes Attempted`;
+
+            let participantScores = {};
+            appState.submissions.forEach(sub => {
+                const p = sub.participantPhone;
+                participantScores[p] = (participantScores[p] || 0) + sub.score;
+            });
+            let sortedParticipants = Object.keys(participantScores).sort((a, b) => participantScores[b] - participantScores[a]);
+            let rank = sortedParticipants.indexOf(phone) + 1;
+
+            if (rank > 0) {
+                document.getElementById('dashRankBadge').innerText = `#${rank}`;
+                document.getElementById('dashRankSubtext').innerText = `Out of ${sortedParticipants.length} Participants`;
+            } else {
+                document.getElementById('dashRankBadge').innerText = `#--`;
+                document.getElementById('dashRankSubtext').innerText = `Not Ranked Yet`;
+            }
+
+            const streak = mySubs.length;
+            document.getElementById('dashStreak').innerText = `${streak} ${streak === 1 ? 'Day' : 'Days'}`;
+
+            renderProfileBadges(mySubs, totalScore, accuracy, streak);
+
+            const listContainer = document.getElementById('studentQuizHistoryList');
+            listContainer.innerHTML = '';
+
+            if (mySubs.length === 0) {
+                listContainer.innerHTML = `<div class="text-xs text-slate-400 p-4 text-center">No quiz attempts recorded yet. Take today's quiz to get started!</div>`;
+                return;
+            }
+
+            mySubs.forEach(sub => {
+                const quiz = appState.quizzes.find(q => q.id === sub.quizId);
+                const item = document.createElement('div');
+                item.className = `p-3.5 rounded-xl border cursor-pointer transition-all ${appState.selectedReviewQuizId === sub.quizId
+                        ? 'border-brand-500 bg-brand-50/70 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`;
+
+                item.onclick = () => reviewStudentQuiz(sub.quizId);
+
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-800">${sub.quizDate}</span>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">${sub.score}/${sub.totalPossible} Marks</span>
+                    </div>
+                    <div class="text-xs font-semibold text-slate-600 truncate mt-1">${quiz ? quiz.title : 'Seerah Quiz'}</div>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (mySubs.length > 0 && !appState.selectedReviewQuizId) {
+                appState.selectedReviewQuizId = mySubs[0].quizId;
+            }
+            if (appState.selectedReviewQuizId) {
+                reviewStudentQuiz(appState.selectedReviewQuizId);
+            }
+        }
+
+        function renderProfileBadges(mySubs, totalScore, accuracy, streak) {
+            const badgesContainer = document.getElementById('profileBadgesContainer');
+            badgesContainer.innerHTML = '';
+
+            const badgeDefinitions = [
+                {
+                    id: 'b1',
+                    title: 'Seerah Explorer',
+                    desc: 'Completed at least 1 Seerah Quiz',
+                    icon: 'fa-kaaba',
+                    color: 'bg-emerald-500 text-white',
+                    unlocked: mySubs.length >= 1
+                },
+                {
+                    id: 'b2',
+                    title: 'Top Marks Scholar',
+                    desc: 'Achieved 80%+ accuracy overall',
+                    icon: 'fa-award',
+                    color: 'bg-amber-500 text-white',
+                    unlocked: accuracy >= 80 && mySubs.length >= 1
+                },
+                {
+                    id: 'b3',
+                    title: 'Daily Streak Star',
+                    desc: 'Participated in 2+ Quiz Days',
+                    icon: 'fa-fire',
+                    color: 'bg-orange-500 text-white',
+                    unlocked: streak >= 2
+                },
+                {
+                    id: 'b4',
+                    title: 'Rabee\'ul Contender',
+                    desc: 'Scored 10+ Total Points',
+                    icon: 'fa-crown',
+                    color: 'bg-emerald-700 text-amber-300',
+                    unlocked: totalScore >= 10
+                }
+            ];
+
+            let unlockedCount = 0;
+
+            badgeDefinitions.forEach(badge => {
+                if (badge.unlocked) unlockedCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl border flex items-center space-x-3 transition-all ${badge.unlocked
+                        ? 'border-emerald-200 bg-emerald-50/40 shadow-sm'
+                        : 'border-slate-200 bg-slate-50 opacity-50 grayscale'
+                    }`;
+
+                card.innerHTML = `
+                    <div class="w-10 h-10 rounded-xl ${badge.unlocked ? badge.color : 'bg-slate-200 text-slate-400'} flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid ${badge.icon}"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">${badge.title}</div>
+                        <div class="text-[10px] text-slate-500 leading-tight">${badge.desc}</div>
+                    </div>
+                `;
+                badgesContainer.appendChild(card);
+            });
+
+            document.getElementById('badgesCountText').innerText = `${unlockedCount} of ${badgeDefinitions.length} Badges Unlocked`;
+        }
+
+        function reviewStudentQuiz(quizId) {
+            appState.selectedReviewQuizId = quizId;
+            const phone = appState.currentStudent ? appState.currentStudent.phone : '';
+            const sub = appState.submissions.find(s => s.quizId === quizId && s.participantPhone === phone);
+            const quiz = appState.quizzes.find(q => q.id === quizId);
+
+            if (!sub || !quiz) return;
+
+            document.getElementById('reviewQuizTitle').innerText = quiz.title;
+            document.getElementById('reviewQuizMeta').innerText = `Date: ${quiz.date} • Submitted by ${sub.participantName}`;
+            document.getElementById('reviewQuizScoreBadge').innerText = `Score: ${sub.score} / ${sub.totalPossible}`;
+
+            const container = document.getElementById('reviewQuestionsContainer');
+            container.innerHTML = '';
+
+            quiz.questions.forEach((q, idx) => {
+                const userChoice = sub.answers ? sub.answers[q.id] : undefined;
+                const isCorrect = userChoice === q.correctIndex;
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} space-y-2`;
+
+                let optionsHtml = q.options.map((opt, oIdx) => {
+                    let optClass = 'bg-white border-slate-200 text-slate-700';
+                    if (oIdx === q.correctIndex) optClass = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
+                    if (oIdx === userChoice && !isCorrect) optClass = 'bg-rose-100 border-rose-300 text-rose-900 line-through';
+
+                    return `<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
+                        <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
+                        ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
+                        ${oIdx === userChoice && !isCorrect ? '<span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-semibold">Your Pick</span>' : ''}
+                    </div>`;
+                }).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">Q${idx + 1}. ${q.text}</span>
+                        <span class="text-xs font-extrabold ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${isCorrect ? '+' + (q.marks || 2) : '0'} Marks</span>
+                    </div>
+                    <div class="space-y-1.5 pt-1">${optionsHtml}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function submitQuiz() {
+            clearInterval(appState.quizTimerInterval);
+
+            const quiz = appState.activeQuiz;
+            let score = 0;
+            let totalPossible = 0;
+
+            quiz.questions.forEach(q => {
+                const marks = q.marks || 2;
+                totalPossible += marks;
+                if (appState.userAnswers[q.id] === q.correctIndex) {
+                    score += marks;
+                }
+            });
+
+            const submission = {
+                id: 'sub-' + Date.now(),
+                participantName: appState.currentStudent.name,
+                participantPhone: appState.currentStudent.phone,
+                quizId: quiz.id,
+                quizDate: quiz.date,
+                score: score,
+                totalPossible: totalPossible,
+                answers: appState.userAnswers,
+                completedAt: new Date().toISOString(),
+                timeTakenSeconds: appState.timeSpentSeconds
+            };
+
+            appState.submissions.push(submission);
+            await saveData();
+
+            document.getElementById('resultParticipantName').innerText = appState.currentStudent.name;
+            document.getElementById('resultScore').innerText = score;
+            document.getElementById('resultTotalPossible').innerText = totalPossible;
+
+            const accuracyPct = Math.round((score / totalPossible) * 100) || 0;
+            document.getElementById('resultPercentageText').innerText = `Accuracy: ${accuracyPct}%`;
+
+            switchView('quizResult');
+
+            if (window.confetti) {
+                window.confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+            }
+        }
+
+        function openAdminAuth() {
+            if (appState.adminAuthenticated) {
+                switchView('admin');
+            } else {
+                document.getElementById('adminAuthModal').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminAuthModal() {
+            document.getElementById('adminAuthModal').classList.add('hidden');
+        }
+
+        function verifyAdminPasscode() {
+            const input = document.getElementById('adminPasscodeInput').value.trim();
+            const expected = appState.appSettings.adminPasscode || 'admin123';
+            if (input === expected || input === 'admin') {
+                appState.adminAuthenticated = true;
+                closeAdminAuthModal();
+                document.getElementById('navAdminBtnText').innerText = 'Admin Active';
+                showToast('Admin Access Granted', 'success');
+                switchView('admin');
+            } else {
+                showToast('Incorrect Passcode!', 'error');
+            }
+        }
+
+        function showCertificate(name, score, date) {
+            document.getElementById('certStudentName').innerText = name;
+            document.getElementById('certScore').innerText = score;
+            document.getElementById('certDate').innerText = date;
+            document.getElementById('certMadrasaName').innerText = appState.appSettings ? (appState.appSettings.madrasaName || appState.appSettings.madrasaname || 'Parammal Madrasa') : 'Parammal Madrasa';
+            document.getElementById('certSubtitle').innerText = appState.appSettings ? (appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || "Rabee'ul Awwal Special") : "Rabee'ul Awwal Special";
+            
+            document.getElementById('certificateModal').classList.remove('hidden');
+        }
+
+        function exitAdminView() {
+            appState.adminAuthenticated = false;
+            document.getElementById('navAdminBtnText').innerText = 'Admin Access';
+            switchView('home');
+            showToast('Exited Admin Control Panel', 'info');
+        }
+
+        function renderAdminView() {
+            renderLeaderboard();
+            renderAdminQuizzes();
+            renderAdminSubmissionsTable();
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById('adminTabLeaderboard').classList.add('hidden');
+            document.getElementById('adminTabQuizzes').classList.add('hidden');
+            document.getElementById('adminTabStudents').classList.add('hidden');
+            if (document.getElementById('adminTabSettings')) document.getElementById('adminTabSettings').classList.add('hidden');
+            if (document.getElementById('adminTabUsers')) document.getElementById('adminTabUsers').classList.add('hidden');
+
+            ['tabBtnLeaderboard', 'tabBtnQuizzes', 'tabBtnStudents', 'tabBtnSettings', 'tabBtnUsers'].forEach(btn => {
+                const el = document.getElementById(btn);
+                if (el) el.className = "px-4 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all";
+            });
+
+            if (tab === 'leaderboard') {
+                document.getElementById('adminTabLeaderboard').classList.remove('hidden');
+                document.getElementById('tabBtnLeaderboard').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
+            } else if (tab === 'quizzes') {
+                document.getElementById('adminTabQuizzes').classList.remove('hidden');
+                document.getElementById('tabBtnQuizzes').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
+            } else if (tab === 'students') {
+                document.getElementById('adminTabStudents').classList.remove('hidden');
+                document.getElementById('tabBtnStudents').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
+            } else if (tab === 'settings') {
+                document.getElementById('adminTabSettings').classList.remove('hidden');
+                document.getElementById('tabBtnSettings').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
+                document.getElementById('settingMadrasaName').value = appState.appSettings.madrasaName || '';
+                document.getElementById('settingSubtitle').value = appState.appSettings.eventSubtitle || '';
+                document.getElementById('settingAdminPasscode').value = appState.appSettings.adminPasscode || '';
+            } else if (tab === 'users') {
+                document.getElementById('adminTabUsers').classList.remove('hidden');
+                document.getElementById('tabBtnUsers').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
+                renderRegisteredUsers();
+            }
+        }
+
+        function renderLeaderboard() {
+            const selectEl = document.getElementById('leaderboardDateFilter');
+            const dateFilter = selectEl.value;
+
+            const existingVal = selectEl.value;
+            selectEl.innerHTML = `<option value="ALL">All-Time Cumulative</option>`;
+            appState.quizzes.forEach(q => {
+                selectEl.innerHTML += `<option value="${q.date}">${q.date} - ${q.title}</option>`;
+            });
+            selectEl.value = existingVal || 'ALL';
+
+            let subs = appState.submissions;
+            if (dateFilter !== 'ALL') {
+                subs = subs.filter(s => s.quizDate === dateFilter);
+            }
+
+            let pMap = {};
+            subs.forEach(s => {
+                const key = s.participantPhone;
+                if (!pMap[key]) {
+                    pMap[key] = {
+                        name: s.participantName,
+                        phone: s.participantPhone,
+                        totalScore: 0,
+                        totalPossible: 0,
+                        attempts: 0,
+                        minTimeSeconds: 999999
+                    };
+                }
+                pMap[key].totalScore += s.score;
+                pMap[key].totalPossible += s.totalPossible;
+                pMap[key].attempts += 1;
+                pMap[key].minTimeSeconds = Math.min(pMap[key].minTimeSeconds, s.timeTakenSeconds || 999);
+            });
+
+            let rankedList = Object.values(pMap).sort((a, b) => {
+                if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+                const accB = (b.totalScore / (b.totalPossible || 1));
+                const accA = (a.totalScore / (a.totalPossible || 1));
+                if (accB !== accA) return accB - accA;
+                return a.minTimeSeconds - b.minTimeSeconds;
+            });
+
+            document.getElementById('leaderboardCountText').innerText = `${rankedList.length} Participants`;
+
+            const podium = document.getElementById('podiumContainer');
+            podium.innerHTML = '';
+
+            const podiumConfigs = [
+                { rank: 1, title: 'Gold Medalist 🥇', bg: 'gold-banner gold-glow text-white', icon: 'fa-trophy text-amber-300' },
+                { rank: 2, title: 'Silver Medalist 🥈', bg: 'bg-slate-800 silver-glow text-white', icon: 'fa-medal text-slate-300' },
+                { rank: 3, title: 'Bronze Medalist 🥉', bg: 'bg-amber-900 bronze-glow text-white', icon: 'fa-award text-amber-400' }
+            ];
+
+            podiumConfigs.forEach((cfg, idx) => {
+                const player = rankedList[idx];
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl ${cfg.bg} relative overflow-hidden shadow-lg flex flex-col justify-between`;
+
+                if (player) {
+                    const acc = player.totalPossible ? Math.round((player.totalScore / player.totalPossible) * 100) : 0;
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">${cfg.title}</span>
+                            <i class="fa-solid ${cfg.icon} text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-black truncate">${player.name}</h4>
+                            <p class="text-xs opacity-80">${player.phone}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/20 flex justify-between items-end">
+                            <div>
+                                <div class="text-[10px] uppercase font-bold opacity-75">Score</div>
+                                <div class="text-2xl font-black">${player.totalScore} <span class="text-xs font-normal">pts</span></div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] uppercase font-bold opacity-75">Accuracy</div>
+                                <div class="text-sm font-bold">${acc}%</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="text-xs font-bold uppercase opacity-60 mb-2">${cfg.title}</div>
+                        <div class="text-sm font-semibold opacity-40 italic py-6">Awaiting participant...</div>
+                    `;
+                }
+                podium.appendChild(card);
+            });
+
+            const tbody = document.getElementById('leaderboardTableBody');
+            tbody.innerHTML = '';
+
+            rankedList.forEach((p, idx) => {
+                const acc = p.totalPossible ? Math.round((p.totalScore / p.totalPossible) * 100) : 0;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-900">#${idx + 1}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${p.name}</td>
+                    <td class="py-3 px-4 text-slate-500 font-mono">${p.phone}</td>
+                    <td class="py-3 px-4 font-extrabold text-emerald-700">${p.totalScore} pts</td>
+                    <td class="py-3 px-4 font-semibold text-slate-700">${acc}%</td>
+                    <td class="py-3 px-4 text-slate-600">${p.attempts}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="inspectParticipantRecord('${p.phone}')" class="px-2.5 py-1 text-[11px] font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-lg">
+                            Inspect
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function inspectParticipantRecord(phone) {
+            const studentSub = appState.submissions.find(s => s.participantPhone === phone);
+            if (studentSub) {
+                appState.currentStudent = {
+                    name: studentSub.participantName,
+                    phone: studentSub.participantPhone
+                };
+                updateHeaderUserInfo();
+                switchView('studentDashboard');
+                showToast(`Viewing profile for ${studentSub.participantName}`, 'info');
+            }
+        }
+
+        function renderAdminQuizzes() {
+            const container = document.getElementById('adminQuizzesList');
+            container.innerHTML = '';
+
+            appState.quizzes.forEach(q => {
+                const shareUrl = `${window.location.origin}${window.location.pathname}?date=${q.date}`;
+                const card = document.createElement('div');
+                card.className = "p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3";
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 bg-brand-100 text-brand-800 text-xs font-bold rounded-full">${q.date}</span>
+                        <span class="text-xs text-slate-500 font-semibold">${q.questions.length} Questions</span>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-900">${q.title}</h4>
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <button onclick="copyToClipboard('${shareUrl}')" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center space-x-1">
+                            <i class="fa-solid fa-share-nodes text-xs"></i>
+                            <span>Copy Share Link</span>
+                        </button>
+                        <button onclick="deleteQuiz('${q.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg text-xs">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAdminSubmissionsTable() {
+            const tbody = document.getElementById('studentsSubmissionsTableBody');
+            tbody.innerHTML = '';
+
+            appState.submissions.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${s.participantName}</td>
+                    <td class="py-3 px-4 text-slate-500 font-mono">${s.participantPhone}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-700">${s.quizDate}</td>
+                    <td class="py-3 px-4 font-extrabold text-emerald-700">${s.score} / ${s.totalPossible}</td>
+                    <td class="py-3 px-4 text-slate-500">${s.timeTakenSeconds || 0} secs</td>
+                    <td class="py-3 px-4 text-slate-400 text-[11px]">${new Date(s.completedAt).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterParticipantTable() {
+            const q = document.getElementById('searchParticipantInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#studentsSubmissionsTableBody tr');
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                r.style.display = text.includes(q) ? '' : 'none';
+            });
+        }
+
+        function openCreateQuizModal() {
+            document.getElementById('formQuizTitle').value = '';
+            document.getElementById('formQuizDate').value = getTodayDateString();
+            document.getElementById('formQuestionsContainer').innerHTML = '';
+            addQuestionField();
+            document.getElementById('quizFormModal').classList.remove('hidden');
+        }
+
+        function closeCreateQuizModal() {
+            document.getElementById('quizFormModal').classList.add('hidden');
+        }
+
+        function addQuestionField() {
+            const container = document.getElementById('formQuestionsContainer');
+            const qCount = container.children.length + 1;
+
+            const div = document.createElement('div');
+            div.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3 relative question-block";
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700">Question ${qCount}</span>
+                    <button type="button" onclick="this.closest('.question-block').remove()" class="text-xs text-rose-500 hover:text-rose-700 font-bold">Remove</button>
+                </div>
+                <input type="text" placeholder="Question text..." required class="q-text w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Option A" required class="q-opt-0 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    <input type="text" placeholder="Option B" required class="q-opt-1 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    <input type="text" placeholder="Option C" required class="q-opt-2 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    <input type="text" placeholder="Option D" required class="q-opt-3 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                </div>
+                <div class="flex items-center space-x-3 pt-1">
+                    <span class="text-xs font-semibold text-slate-600">Correct Index:</span>
+                    <select class="q-correct px-2 py-1 text-xs rounded border border-slate-300">
+                        <option value="0">Option A (0)</option>
+                        <option value="1">Option B (1)</option>
+                        <option value="2">Option C (2)</option>
+                        <option value="3">Option D (3)</option>
+                    </select>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        async function handleSaveQuiz(e) {
+            e.preventDefault();
+            const title = document.getElementById('formQuizTitle').value.trim();
+            const date = document.getElementById('formQuizDate').value;
+            const blocks = document.querySelectorAll('.question-block');
+
+            if (blocks.length === 0) {
+                showToast('Please add at least one question', 'error');
+                return;
+            }
+
+            const questions = [];
+            blocks.forEach((b, idx) => {
+                questions.push({
+                    id: `q-${Date.now()}-${idx}`,
+                    text: b.querySelector('.q-text').value.trim(),
+                    options: [
+                        b.querySelector('.q-opt-0').value.trim(),
+                        b.querySelector('.q-opt-1').value.trim(),
+                        b.querySelector('.q-opt-2').value.trim(),
+                        b.querySelector('.q-opt-3').value.trim()
+                    ],
+                    correctIndex: parseInt(b.querySelector('.q-correct').value),
+                    marks: 2
+                });
+            });
+
+            const newQuiz = {
+                id: `quiz-${date}`,
+                date: date,
+                title: title,
+                questions: questions
+            };
+
+            const existingIdx = appState.quizzes.findIndex(q => q.date === date);
+            if (existingIdx >= 0) {
+                appState.quizzes[existingIdx] = newQuiz;
+            } else {
+                appState.quizzes.push(newQuiz);
+            }
+
+            await saveData();
+            closeCreateQuizModal();
+            showToast('Daily quiz saved successfully!', 'success');
+            renderAdminView();
+        }
+
+        async function deleteQuiz(id) {
+            if (confirm('Are you sure you want to delete this quiz?')) {
+                appState.quizzes = appState.quizzes.filter(q => q.id !== id);
+                await saveData();
+                renderAdminView();
+                showToast('Quiz deleted', 'info');
+            }
+        }
+
+        function exportParticipantsData() {
+            let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec)\n';
+            appState.submissions.forEach(s => {
+                csv += `"${s.participantName}","${s.participantPhone}","${s.quizDate}",${s.score},${s.totalPossible},${s.timeTakenSeconds || 0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `parammal_madrasa_seerah_quiz_data_${getTodayDateString()}.csv`;
+            a.click();
+            showToast('Exported CSV dataset', 'success');
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (!toast || !toastMsg) return;
+            toastMsg.innerText = msg;
+
+            if (type === 'success') {
+                toastIcon.className = 'text-emerald-400 text-lg';
+                toastIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (type === 'error') {
+                toastIcon.className = 'text-rose-400 text-lg';
+                toastIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+            } else {
+                toastIcon.className = 'text-amber-400 text-lg';
+                toastIcon.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        function copyToClipboard(text) {
+            const input = document.createElement('textarea');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('Copied share link to clipboard!', 'success');
+        }
+    </script>
+
+        <!-- Modal: Certificate Preview -->
+        <div id="certificateModal" class="fixed inset-0 z-[60] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-8 relative overflow-hidden text-center" id="certificateContent">
+                <button onclick="document.getElementById('certificateModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg z-10 hidden-print"><i class="fa-solid fa-xmark"></i></button>
+                
+                <div class="absolute top-0 left-0 w-full h-4 gradient-banner"></div>
+                <div class="absolute bottom-0 left-0 w-full h-4 gradient-banner"></div>
+                
+                <div class="border-4 border-emerald-100 p-8 rounded-lg relative bg-amber-50/10">
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-emerald-600 text-4xl">
+                        <i class="fa-solid fa-award text-amber-500"></i>
+                    </div>
+                    
+                    <h2 class="text-3xl font-bold text-emerald-800 mt-4 mb-2">Certificate of Achievement</h2>
+                    <p class="text-sm font-semibold text-slate-500 mb-6 uppercase tracking-widest" id="certSubtitle">Rabee'ul Awwal Special</p>
+                    
+                    <p class="text-slate-600 italic">This is proudly presented to</p>
+                    <h1 class="text-5xl font-extrabold text-slate-900 my-4 font-serif" id="certStudentName">Student Name</h1>
+                    
+                    <p class="text-slate-600 mb-6">For outstanding performance and dedication, achieving a score of <span class="font-bold text-brand-600 text-xl" id="certScore">0</span> marks.</p>
+                    
+                    <div class="flex justify-between items-end mt-12 px-8">
+                        <div class="text-center border-t border-slate-300 pt-2 w-32">
+                            <p class="text-xs font-bold text-slate-700" id="certMadrasaName">Parammal Madrasa</p>
+                            <p class="text-[10px] text-slate-500">Institution</p>
+                        </div>
+                        
+                        <div class="w-16 h-16 rounded-full border-2 border-amber-300 flex items-center justify-center text-amber-500 bg-amber-50">
+                            <i class="fa-solid fa-medal text-3xl"></i>
+                        </div>
+                        
+                        <div class="text-center border-t border-slate-300 pt-2 w-32">
+                            <p class="text-xs font-bold text-slate-700" id="certDate">Date</p>
+                            <p class="text-[10px] text-slate-500">Awarded On</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="window.print()" class="mt-6 px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold shadow-md hover:bg-slate-700 hidden-print inline-flex items-center">
+                    <i class="fa-solid fa-print mr-2"></i> Print / Save PDF
+                </button>
+                <style>
+                    @media print {
+                        body * { visibility: hidden; }
+                        #certificateModal, #certificateContent, #certificateContent * { visibility: visible; }
+                        #certificateModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: white; }
+                        .hidden-print { display: none !important; }
+                    }
+                </style>
+            </div>
+        </div>
+
+</body>
+
+</html>
