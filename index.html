@@ -667,7 +667,7 @@
                                     <th class="py-3 px-4">Score / Possible</th>
                                     <th class="py-3 px-4">Time Taken</th>
                                     <th class="py-3 px-4">Date Completed</th>
-                                    <th class="py-3 px-4 text-right">Certificate</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="studentsSubmissionsTableBody" class="divide-y divide-slate-100 text-xs">
@@ -711,6 +711,7 @@
                                     <th class="py-3 px-4">Name</th>
                                     <th class="py-3 px-4">Phone</th>
                                     <th class="py-3 px-4">Registered At</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="registeredUsersTableBody" class="text-sm divide-y divide-slate-100">
@@ -1034,6 +1035,22 @@
             }
         }
 
+        
+        async function deleteParticipant(phone) {
+            if (!confirm('Are you sure you want to delete this registered user account?')) return;
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                const { error } = await appState.supabaseClient.from('participants').delete().eq('phone', phone);
+                if (error) {
+                    showToast('Failed to delete user', 'error');
+                    console.error(error);
+                    return;
+                }
+            }
+            appState.participants = appState.participants.filter(p => p.phone !== phone);
+            renderRegisteredUsers();
+            showToast('User account deleted successfully', 'success');
+        }
+
         function renderRegisteredUsers() {
             const tbody = document.getElementById('registeredUsersTableBody');
             if(!tbody) return;
@@ -1046,6 +1063,11 @@
                     <td class="py-3 px-4 font-bold text-slate-700">${p.name}</td>
                     <td class="py-3 px-4">${p.phone}</td>
                     <td class="py-3 px-4 text-slate-500">${regDate}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteParticipant('${p.phone}')" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 hover:bg-rose-100 rounded transition-colors" title="Delete User">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1736,6 +1758,23 @@
             });
         }
 
+        
+        async function deleteSubmission(id) {
+            if (!confirm('Are you sure you want to delete this submission record?')) return;
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                const { error } = await appState.supabaseClient.from('submissions').delete().eq('id', id);
+                if (error) {
+                    showToast('Failed to delete submission', 'error');
+                    console.error(error);
+                    return;
+                }
+            }
+            appState.submissions = appState.submissions.filter(s => s.id !== id);
+            renderAdminSubmissionsTable();
+            renderLeaderboard(); // also update leaderboard in case it was a high score
+            showToast('Submission deleted successfully', 'success');
+        }
+
         function renderAdminSubmissionsTable() {
             const tbody = document.getElementById('studentsSubmissionsTableBody');
             tbody.innerHTML = '';
@@ -1750,6 +1789,14 @@
                     <td class="py-3 px-4 font-extrabold text-emerald-700">${s.score} / ${s.totalPossible}</td>
                     <td class="py-3 px-4 text-slate-500">${s.timeTakenSeconds || 0} secs</td>
                     <td class="py-3 px-4 text-slate-400 text-[11px]">${new Date(s.completedAt).toLocaleString()}</td>
+                    <td class="py-3 px-4 text-right space-x-2">
+                        <button onclick="showCertificate('${s.participantName.replace(/'/g, "\\'")}', ${s.score}, '${s.quizDate}', '--')" class="text-emerald-600 hover:text-emerald-800 p-1 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors" title="View Certificate">
+                            <i class="fa-solid fa-certificate"></i>
+                        </button>
+                        <button onclick="deleteSubmission('${s.id}')" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 hover:bg-rose-100 rounded transition-colors" title="Delete Submission">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
