@@ -263,22 +263,28 @@
                 </div>
             </div>
 
-            <!-- Active Today's Quiz Highlight Box -->
-            <div
-                class="gradient-banner rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-500/30 relative overflow-hidden">
-                <div class="space-y-1 text-center sm:text-left z-10">
-                    <div
-                        class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-md text-amber-200 border border-white/20">
-                        <i class="fa-solid fa-clock mr-1"></i> Today's Featured Seerah Challenge
-                    </div>
-                    <h3 class="text-xl font-bold" id="featuredQuizTitle">Loading Today's Seerah Quiz...</h3>
-                    <p class="text-xs text-emerald-100" id="featuredQuizMeta">Questions ready for Rabee'ul Awwal</p>
+            
+            <!-- All Quizzes List (Dynamic) -->
+            <div id="homeQuizzesList" class="space-y-4 mt-6">
+                <!-- Injected via renderHomeQuizzesList() -->
+            </div>
+
+        </section>
+
+        
+        <!-- VIEW: Read Past Quiz -->
+        <section id="viewReadPastQuiz" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-100 flex items-center justify-between">
+                <div>
+                    <h2 id="readPastQuizTitle" class="text-2xl font-bold text-slate-900 mt-1">Past Quiz</h2>
+                    <p id="readPastQuizMeta" class="text-xs text-slate-500 mt-1">Date</p>
                 </div>
-                <button onclick="selectTodayQuiz()"
-                    class="z-10 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-xl font-bold text-sm shadow-md transition-all whitespace-nowrap flex items-center space-x-1.5">
-                    <span>Start Today's Quiz</span>
-                    <i class="fa-solid fa-bolt"></i>
+                <button onclick="switchView('home')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
                 </button>
+            </div>
+            <div id="readPastQuestionsContainer" class="space-y-4">
+                <!-- Dynamic Questions -->
             </div>
         </section>
 
@@ -1074,7 +1080,7 @@
         }
 
         function switchView(viewName) {
-            const views = ['viewHome', 'viewQuizPlayer', 'viewQuizResult', 'viewStudentDashboard', 'viewAdmin'];
+            const views = ['viewHome', 'viewQuizPlayer', 'viewQuizResult', 'viewStudentDashboard', 'viewAdmin', 'viewReadPastQuiz'];
             views.forEach(v => {
                 const el = document.getElementById(v);
                 if (el) el.classList.add('hidden');
@@ -1107,28 +1113,139 @@
         }
 
         function updateFeaturedQuizBanner() {
-            const todayStr = getTodayDateString();
-            const todayQuiz = appState.quizzes.find(q => q.date === todayStr) || appState.quizzes[0];
-            const titleEl = document.getElementById('featuredQuizTitle');
-            const metaEl = document.getElementById('featuredQuizMeta');
+            renderHomeQuizzesList();
+        }
 
-            if (todayQuiz && titleEl && metaEl) {
-                titleEl.innerText = todayQuiz.title;
-                metaEl.innerText = `${todayQuiz.date} • ${todayQuiz.questions ? todayQuiz.questions.length : 0} Seerah Questions`;
+        
+        
+        function renderHomeQuizzesList() {
+            const container = document.getElementById('homeQuizzesList');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const todayStr = getTodayDateString();
+            
+            // Sort quizzes by date descending
+            const sortedQuizzes = [...appState.quizzes].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedQuizzes.forEach(quiz => {
+                const card = document.createElement('div');
+                const isToday = quiz.date === todayStr;
+                const isPast = quiz.date < todayStr;
+                const isFuture = quiz.date > todayStr;
+                
+                if (isToday) {
+                    card.className = "gradient-banner rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-500/30 relative overflow-hidden";
+                    card.innerHTML = `
+                        <div class="space-y-1 text-center sm:text-left z-10">
+                            <div class="inline-block px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-md text-amber-200 border border-white/20">
+                                <i class="fa-solid fa-clock mr-1"></i> Today's Featured Challenge
+                            </div>
+                            <h3 class="text-xl font-bold">${quiz.title}</h3>
+                            <p class="text-xs text-emerald-100">Questions ready for ${quiz.date}</p>
+                        </div>
+                        <button onclick="handleQuizSelection('${quiz.date}')" class="z-10 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-xl font-bold text-sm shadow-md transition-all whitespace-nowrap flex items-center space-x-1.5">
+                            <span>Attempt Quiz</span>
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                    `;
+                } else if (isPast) {
+                    card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4";
+                    card.innerHTML = `
+                        <div>
+                            <div class="text-xs font-bold text-slate-500 mb-1">${quiz.date}</div>
+                            <h3 class="text-lg font-bold text-slate-800">${quiz.title}</h3>
+                        </div>
+                        <button onclick="readPastQuiz('${quiz.id}')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>Read Answers</span>
+                        </button>
+                    `;
+                } else if (isFuture) {
+                    card.className = "bg-slate-50 rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-70";
+                    card.innerHTML = `
+                        <div>
+                            <div class="text-xs font-bold text-brand-600 mb-1">Upcoming: ${quiz.date}</div>
+                            <h3 class="text-lg font-bold text-slate-600">${quiz.title}</h3>
+                        </div>
+                        <button disabled class="px-4 py-2 bg-slate-200 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed flex items-center space-x-1.5">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>Locked</span>
+                        </button>
+                    `;
+                }
+                
+                container.appendChild(card);
+            });
+            
+            if(sortedQuizzes.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-500 py-8">No quizzes available yet. Please check back later.</div>';
             }
         }
 
-        function selectTodayQuiz() {
-            const todayStr = getTodayDateString();
-            document.getElementById('inputQuizDate').value = todayStr;
-            const nameInput = document.getElementById('inputStudentName');
-            if (!nameInput.value.trim()) {
+        function handleQuizSelection(quizDate) {
+            document.getElementById('inputQuizDate').value = quizDate;
+            
+            if (!appState.currentStudent) {
+                const nameInput = document.getElementById('inputStudentName');
                 nameInput.focus();
                 showToast('Please enter your name and phone number to start', 'info');
-            } else {
-                handleParticipantLogin(new Event('submit'));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
             }
+            
+            // If logged in, process directly
+            const quiz = appState.quizzes.find(q => q.date === quizDate);
+            if (!quiz) return;
+            
+            // Check if already submitted
+            const existingSub = appState.submissions.find(s => s.participantPhone === appState.currentStudent.phone && s.quizDate === quizDate);
+            if (existingSub) {
+                showToast('You have already submitted answers for this quiz date. Opening your profile to review.', 'info');
+                switchView('studentDashboard');
+                return;
+            }
+            
+            startQuiz(quiz);
         }
+
+        function readPastQuiz(quizId) {
+            const quiz = appState.quizzes.find(q => q.id === quizId);
+            if (!quiz) return;
+
+            document.getElementById('readPastQuizTitle').innerText = quiz.title;
+            document.getElementById('readPastQuizMeta').innerText = `Date: ${quiz.date} • Read-Only Mode (Answers Shown)`;
+
+            const container = document.getElementById('readPastQuestionsContainer');
+            container.innerHTML = '';
+
+            quiz.questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border bg-white border-slate-200 shadow-sm space-y-2`;
+
+                let optionsHtml = q.options.map((opt, oIdx) => {
+                    let optClass = 'bg-slate-50 border-slate-200 text-slate-600';
+                    if (oIdx === q.correctIndex) optClass = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
+
+                    return \`<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
+                        <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
+                        ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
+                    </div>\`;
+                }).join('');
+
+                card.innerHTML = \`
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-800">Q${idx + 1}. ${q.text}</span>
+                        <span class="text-xs font-extrabold text-brand-600">${q.marks || 2} Marks</span>
+                    </div>
+                    <div class="space-y-1.5 pt-1">${optionsHtml}</div>
+                \`;
+                container.appendChild(card);
+            });
+            
+            switchView('viewReadPastQuiz');
+        }
+
 
         async function handleParticipantLogin(e) {
             if (e && e.preventDefault) e.preventDefault();
