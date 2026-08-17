@@ -804,6 +804,7 @@
 
                 <div>
                     <input type="password" id="adminPasscodeInput" placeholder="Enter Admin Passcode"
+                        onkeydown="if(event.key==='Enter') verifyAdminPasscode()"
                         class="w-full px-3 py-2 text-center text-sm font-bold tracking-widest rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
 
@@ -840,12 +841,12 @@
         let appState = {
             participants: [],
             appSettings: { adminPasscode: 'admin123', madrasaName: 'Parammal Madrasa', eventSubtitle: 'Rabee\'ul Awwal Special' },
-            currentView: 'home', // home, quizPlayer, quizResult, studentDashboard, admin
+            currentView: 'home',
             adminAuthenticated: false,
-            currentStudent: null, // { name, phone }
+            currentStudent: null,
             activeQuiz: null,
             activeQuestionIndex: 0,
-            userAnswers: {}, // { questionId: selectedIndex }
+            userAnswers: {},
             quizTimerInterval: null,
             timeSpentSeconds: 0,
             selectedReviewQuizId: null,
@@ -855,11 +856,38 @@
             submissions: []
         };
 
+        function normalizeSettings(raw) {
+            if (!raw || typeof raw !== 'object') return appState.appSettings;
+            return {
+                id: raw.id || 1,
+                madrasaName: raw.madrasaName || raw.madrasaname || 'Parammal Madrasa',
+                eventSubtitle: raw.eventSubtitle || raw.eventsubtitle || "Rabee'ul Awwal Special",
+                adminPasscode: raw.adminPasscode || raw.adminpasscode || 'admin123',
+                madrasaname: raw.madrasaName || raw.madrasaname || 'Parammal Madrasa',
+                eventsubtitle: raw.eventSubtitle || raw.eventsubtitle || "Rabee'ul Awwal Special",
+                adminpasscode: raw.adminPasscode || raw.adminpasscode || 'admin123'
+            };
+        }
+
         // Default Sample Quizzes on Prophet Muhammad ﷺ Seerah (Rabee'ul Awwal)
         const DEFAULT_QUIZZES = [];
 
         // Sample Submissions
         const DEFAULT_SUBMISSIONS = [];
+
+        // ==========================================
+        // SUPABASE CONFIGURATION (SECURITY NOTICE)
+        // ==========================================
+        // ⚠️  SECURITY WARNING: The anonymous key below is embedded directly in client-side code.
+        //     This key is intentionally PUBLIC (it's the anon key) and can be safely exposed
+        //     as long as your Supabase Row Level Security (RLS) policies are properly configured.
+        //     For production deployments, consider:
+        //     1. Enabling strict RLS policies on ALL tables
+        //     2. Restricting table write access to authenticated roles only
+        //     3. Using a backend proxy for write operations instead of direct DB calls
+        // ==========================================
+        const SUPABASE_URL = 'https://qpgnzgowqjvdpkxrdect.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZ256Z293cWp2ZHBreHJkZWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NzEyNjUsImV4cCI6MjEwMjQ0NzI2NX0.m7v9Qp_DI2RuIJ9VnQJiFAm5H51NMM9bHgfL_cCTSqM';
 
         // ==========================================
         // INITIALIZATION & URL QUERY PARSER
@@ -890,6 +918,8 @@
             // Set today's date into date inputs
             const todayStr = getTodayDateString();
             document.getElementById('inputQuizDate').value = todayStr;
+            checkLoginSection();
+            updateDynamicUI();
 
             // Load Supabase Config or Local Mock Data
             initSupabaseClient();
@@ -944,6 +974,7 @@
             }
 
             appState.appSettings = { ...appState.appSettings, ...newSettings };
+            await saveData();
             updateDynamicUI();
             showToast('Settings Saved!', 'success');
         }
@@ -960,8 +991,18 @@
         // SUPABASE & DATA SYNC HANDLERS
         // ==========================================
         function initSupabaseClient() {
-            appState.supabaseClient = window.supabase.createClient('https://qpgnzgowqjvdpkxrdect.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwZ256Z293cWp2ZHBreHJkZWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NzEyNjUsImV4cCI6MjEwMjQ0NzI2NX0.m7v9Qp_DI2RuIJ9VnQJiFAm5H51NMM9bHgfL_cCTSqM');
-            appState.isLiveSupabase = true;
+            try {
+                if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+                    appState.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    appState.isLiveSupabase = true;
+                } else {
+                    console.warn("Supabase library or credentials unavailable. Using localStorage fallback mode.");
+                    appState.isLiveSupabase = false;
+                }
+            } catch (e) {
+                console.warn("Failed to initialize Supabase client, falling back to localStorage:", e);
+                appState.isLiveSupabase = false;
+            }
         }
 
         async function loadData() {
@@ -973,6 +1014,9 @@
                     }
 
                     const { data: sData, error: sErr } = await appState.supabaseClient.from('submissions').select('*');
+                    if (!sErr && sData) {
+                        appState.submissions = sData.map(item => typeof item.data === 'string' ? JSON.parse(item.data) : item.data);
+                    }
                     
                     const { data: pData, error: pErr } = await appState.supabaseClient.from('participants').select('*');
                     if (!pErr && pData) {
@@ -981,12 +1025,9 @@
                     
                     const { data: setts, error: settsErr } = await appState.supabaseClient.from('app_settings').select('*').limit(1);
                     if (!settsErr && setts && setts.length > 0) {
-                        appState.appSettings = setts[0];
+                        appState.appSettings = normalizeSettings(setts[0]);
                     }
                     updateDynamicUI();
-                    if (!sErr && sData) {
-                        appState.submissions = sData.map(item => typeof item.data === 'string' ? JSON.parse(item.data) : item.data);
-                    }
                 } catch (e) {
                     console.warn("Supabase fetch failed, falling back to local storage", e);
                     loadLocalData();
@@ -1005,11 +1046,33 @@
 
             const rawS = localStorage.getItem(MOCK_STORAGE_KEY_SUBMISSIONS);
             appState.submissions = rawS ? JSON.parse(rawS) : DEFAULT_SUBMISSIONS;
+
+            const rawSetts = localStorage.getItem('dailyquiz_settings_v2');
+            if (rawSetts) {
+                try {
+                    appState.appSettings = normalizeSettings(JSON.parse(rawSetts));
+                } catch(e) {}
+            }
+
+            const rawParts = localStorage.getItem('dailyquiz_participants_v2');
+            if (rawParts) {
+                try {
+                    appState.participants = JSON.parse(rawParts);
+                } catch(e) {}
+            }
+            updateDynamicUI();
         }
 
+        // Persists quizzes, submissions, settings, and participants to both localStorage
+        // and the live Supabase database (when connected).
+        // NOTE: Quizzes + submissions are upserted to Supabase directly via this function.
+        //       Participant records and app_settings are managed separately by their own
+        //       dedicated handlers (registerUser, saveAdminSettings, deleteParticipant).
         async function saveData() {
             localStorage.setItem(MOCK_STORAGE_KEY_QUIZZES, JSON.stringify(appState.quizzes));
             localStorage.setItem(MOCK_STORAGE_KEY_SUBMISSIONS, JSON.stringify(appState.submissions));
+            localStorage.setItem('dailyquiz_settings_v2', JSON.stringify(appState.appSettings));
+            localStorage.setItem('dailyquiz_participants_v2', JSON.stringify(appState.participants));
 
             if (appState.isLiveSupabase && appState.supabaseClient) {
                 try {
@@ -1034,9 +1097,17 @@
             appState.currentStudent = { name, phone };
             localStorage.setItem('currentUser', JSON.stringify({ name, phone }));
             updateHeaderUserInfo();
+
+            const existingIdx = appState.participants.findIndex(p => p.phone === phone);
+            if (existingIdx >= 0) {
+                appState.participants[existingIdx] = { ...appState.participants[existingIdx], name, phone };
+            } else {
+                appState.participants.push({ name, phone, created_at: new Date().toISOString() });
+            }
+            await saveData();
             
             if (appState.isLiveSupabase && appState.supabaseClient) {
-                const userObj = { phone, name }; // phone is the PK in the table schema we will propose
+                const userObj = { phone, name };
                 await appState.supabaseClient.from('participants').upsert(userObj, { onConflict: 'phone' });
             }
         }
@@ -1053,7 +1124,10 @@
                 }
             }
             appState.participants = appState.participants.filter(p => p.phone !== phone);
+            await saveData();
             renderRegisteredUsers();
+            renderLeaderboard();
+            renderAdminSubmissionsTable();
             showToast('User account deleted successfully', 'success');
         }
 
@@ -1098,6 +1172,8 @@
             } else if (viewName === 'admin') {
                 document.getElementById('viewAdmin').classList.remove('hidden');
                 renderAdminView();
+            } else if (viewName === 'readPastQuiz') {
+                document.getElementById('viewReadPastQuiz').classList.remove('hidden');
             }
 
             appState.currentView = viewName;
@@ -1107,7 +1183,9 @@
         function logoutParticipant() {
             appState.currentStudent = null;
             appState.selectedReviewQuizId = null;
+            localStorage.removeItem('currentUser');
             updateHeaderUserInfo();
+            checkLoginSection();
             switchView('home');
             showToast('Logged out of student profile', 'info');
         }
@@ -1227,23 +1305,23 @@
                     let optClass = 'bg-slate-50 border-slate-200 text-slate-600';
                     if (oIdx === q.correctIndex) optClass = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
 
-                    return \`<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
+                    return `<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
                         <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
                         ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
-                    </div>\`;
+                    </div>`;
                 }).join('');
 
-                card.innerHTML = \`
+                card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-slate-800">Q${idx + 1}. ${q.text}</span>
                         <span class="text-xs font-extrabold text-brand-600">${q.marks || 2} Marks</span>
                     </div>
                     <div class="space-y-1.5 pt-1">${optionsHtml}</div>
-                \`;
+                `;
                 container.appendChild(card);
             });
             
-            switchView('viewReadPastQuiz');
+            switchView('readPastQuiz');
         }
 
 
@@ -1280,17 +1358,22 @@
         }
 
         async function viewMyHistoryDirectly() {
+            if (appState.currentStudent) {
+                switchView('studentDashboard');
+                return;
+            }
+
             const name = document.getElementById('inputStudentName').value.trim();
             const phone = document.getElementById('inputStudentPhone').value.trim();
 
             if (!phone) {
-                showToast('Please enter your Phone Number to access your profile', 'info');
+                showToast('Please enter your Phone Number to view your profile', 'info');
                 document.getElementById('inputStudentPhone').focus();
                 return;
             }
 
-            appState.currentStudent = { name: name || 'Participant', phone };
-            updateHeaderUserInfo();
+            await registerUser(name || 'Participant', phone);
+            checkLoginSection();
             switchView('studentDashboard');
         }
 
@@ -1650,21 +1733,41 @@
 
         function verifyAdminPasscode() {
             const input = document.getElementById('adminPasscodeInput').value.trim();
-            const expected = appState.appSettings.adminPasscode || 'admin123';
-            if (input === expected || input === 'admin') {
+            const expected = appState.appSettings.adminPasscode || appState.appSettings.adminpasscode || null;
+            const secureDefault = 'Seerah@2026#Secure';
+
+            if (!input) {
+                showToast('Please enter the admin passcode', 'error');
+                document.getElementById('adminPasscodeInput').focus();
+                return;
+            }
+
+            const isCorrect = expected ? (input === expected) : (input === secureDefault || input === 'admin123');
+
+            if (isCorrect) {
                 appState.adminAuthenticated = true;
+                document.getElementById('adminPasscodeInput').value = '';
                 closeAdminAuthModal();
                 document.getElementById('navAdminBtnText').innerText = 'Admin Active';
-                showToast('Admin Access Granted', 'success');
+                showToast('Admin Access Granted ✓', 'success');
                 switchView('admin');
+
+                if (!expected || expected === 'admin123' || expected === 'admin') {
+                    setTimeout(() => {
+                        showToast('⚠️ Please update your admin passcode in Settings tab immediately!', 'error');
+                        switchAdminTab('settings');
+                    }, 800);
+                }
             } else {
-                showToast('Incorrect Passcode!', 'error');
+                showToast('Incorrect Passcode. Contact administrator.', 'error');
+                document.getElementById('adminPasscodeInput').select();
             }
         }
 
-        function showCertificate(name, score, date) {
+        function showCertificate(name, score, date, totalPossible) {
             document.getElementById('certStudentName').innerText = name;
-            document.getElementById('certScore').innerText = score;
+            const totalStr = totalPossible && totalPossible !== '--' ? ` ${score} / ${totalPossible}` : score;
+            document.getElementById('certScore').innerText = totalStr;
             document.getElementById('certDate').innerText = date;
             document.getElementById('certMadrasaName').innerText = appState.appSettings ? (appState.appSettings.madrasaName || appState.appSettings.madrasaname || 'Parammal Madrasa') : 'Parammal Madrasa';
             document.getElementById('certSubtitle').innerText = appState.appSettings ? (appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || "Rabee'ul Awwal Special") : "Rabee'ul Awwal Special";
@@ -1709,9 +1812,9 @@
             } else if (tab === 'settings') {
                 document.getElementById('adminTabSettings').classList.remove('hidden');
                 document.getElementById('tabBtnSettings').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
-                document.getElementById('settingMadrasaName').value = appState.appSettings.madrasaName || '';
-                document.getElementById('settingSubtitle').value = appState.appSettings.eventSubtitle || '';
-                document.getElementById('settingAdminPasscode').value = appState.appSettings.adminPasscode || '';
+                document.getElementById('settingMadrasaName').value = appState.appSettings.madrasaName || appState.appSettings.madrasaname || '';
+                document.getElementById('settingSubtitle').value = appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || '';
+                document.getElementById('settingAdminPasscode').value = appState.appSettings.adminPasscode || appState.appSettings.adminpasscode || '';
             } else if (tab === 'users') {
                 document.getElementById('adminTabUsers').classList.remove('hidden');
                 document.getElementById('tabBtnUsers').className = "px-4 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all";
@@ -1887,8 +1990,10 @@
                 }
             }
             appState.submissions = appState.submissions.filter(s => s.id !== id);
+            await saveData();
             renderAdminSubmissionsTable();
-            renderLeaderboard(); // also update leaderboard in case it was a high score
+            renderLeaderboard();
+            renderRegisteredUsers();
             showToast('Submission deleted successfully', 'success');
         }
 
@@ -1907,7 +2012,7 @@
                     <td class="py-3 px-4 text-slate-500">${s.timeTakenSeconds || 0} secs</td>
                     <td class="py-3 px-4 text-slate-400 text-[11px]">${new Date(s.completedAt).toLocaleString()}</td>
                     <td class="py-3 px-4 text-right space-x-2">
-                        <button onclick="showCertificate('${s.participantName.replace(/'/g, "\\'")}', ${s.score}, '${s.quizDate}', '--')" class="text-emerald-600 hover:text-emerald-800 p-1 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors" title="View Certificate">
+                        <button onclick="showCertificate('${s.participantName.replace(/'/g, "\\'")}', ${s.score}, '${s.quizDate}', ${s.totalPossible})" class="text-emerald-600 hover:text-emerald-800 p-1 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors" title="View Certificate">
                             <i class="fa-solid fa-certificate"></i>
                         </button>
                         <button onclick="deleteSubmission('${s.id}')" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 hover:bg-rose-100 rounded transition-colors" title="Delete Submission">
@@ -2020,6 +2125,13 @@
 
         async function deleteQuiz(id) {
             if (confirm('Are you sure you want to delete this quiz?')) {
+                if (appState.isLiveSupabase && appState.supabaseClient) {
+                    try {
+                        await appState.supabaseClient.from('quizzes').delete().eq('id', id);
+                    } catch (e) {
+                        console.error("Supabase delete quiz error", e);
+                    }
+                }
                 appState.quizzes = appState.quizzes.filter(q => q.id !== id);
                 await saveData();
                 renderAdminView();
