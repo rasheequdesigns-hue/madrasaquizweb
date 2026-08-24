@@ -1160,40 +1160,43 @@
             localStorage.setItem('dailyquiz_participants_v2', JSON.stringify(appState.participants));
 
             if (appState.isLiveSupabase && appState.supabaseClient) {
-                try {
-                    for (const q of appState.quizzes) {
-                        try {
-                            await appState.supabaseClient.from('quizzes').upsert({ id: q.id, data: q });
-                        } catch (e1) {
+                // Run in background to prevent UI freezing
+                (async () => {
+                    try {
+                        for (const q of appState.quizzes) {
                             try {
-                                await appState.supabaseClient.from('quizzes').upsert({ ...q });
-                            } catch (e2) { console.error('Quiz upsert fallback failed:', e2); }
+                                await appState.supabaseClient.from('quizzes').upsert({ id: q.id, data: q });
+                            } catch (e1) {
+                                try {
+                                    await appState.supabaseClient.from('quizzes').upsert({ ...q });
+                                } catch (e2) { console.error('Quiz upsert fallback failed:', e2); }
+                            }
                         }
-                    }
-                    for (const s of appState.submissions) {
-                        try {
-                            await appState.supabaseClient.from('submissions').upsert({ id: s.id, data: s });
-                        } catch (e1) {
+                        for (const s of appState.submissions) {
                             try {
-                                const flat = {
-                                    id: s.id,
-                                    participantname: s.participantName,
-                                    participantphone: normalizePhone(s.participantPhone),
-                                    quizid: s.quizId,
-                                    quizdate: s.quizDate,
-                                    score: s.score,
-                                    totalpossible: s.totalPossible,
-                                    answers: typeof s.answers === 'object' ? JSON.stringify(s.answers) : s.answers,
-                                    completedat: s.completedAt,
-                                    timetakenseconds: s.timeTakenSeconds || 0
-                                };
-                                await appState.supabaseClient.from('submissions').upsert(flat);
-                            } catch (e2) { console.error('Submission upsert fallback failed:', e2); }
+                                await appState.supabaseClient.from('submissions').upsert({ id: s.id, data: s });
+                            } catch (e1) {
+                                try {
+                                    const flat = {
+                                        id: s.id,
+                                        participantname: s.participantName,
+                                        participantphone: normalizePhone(s.participantPhone),
+                                        quizid: s.quizId,
+                                        quizdate: s.quizDate,
+                                        score: s.score,
+                                        totalpossible: s.totalPossible,
+                                        answers: typeof s.answers === 'object' ? JSON.stringify(s.answers) : s.answers,
+                                        completedat: s.completedAt,
+                                        timetakenseconds: s.timeTakenSeconds || 0
+                                    };
+                                    await appState.supabaseClient.from('submissions').upsert(flat);
+                                } catch (e2) { console.error('Submission upsert fallback failed:', e2); }
+                            }
                         }
+                    } catch (e) {
+                        console.error("Supabase upsert error", e);
                     }
-                } catch (e) {
-                    console.error("Supabase upsert error", e);
-                }
+                })();
             }
         }
 
