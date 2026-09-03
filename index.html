@@ -52,6 +52,10 @@
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- jsPDF + AutoTable CDN for PDF exports -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
@@ -869,6 +873,20 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">File Format</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="setExportFormat('csv')" id="exportFormatCsv"
+                                class="py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
+                                <i class="fa-solid fa-file-csv mr-1"></i> CSV (Spreadsheet)
+                            </button>
+                            <button type="button" onclick="setExportFormat('pdf')" id="exportFormatPdf"
+                                class="py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-rose-500 bg-rose-50 text-rose-700">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> PDF (Report)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Date</label>
                         <div class="relative">
                             <i class="fa-solid fa-calendar absolute left-3.5 top-3 text-slate-400 text-sm"></i>
@@ -893,7 +911,7 @@
                         class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200">Cancel</button>
                     <button onclick="executeDateExport()" id="btnExecuteDateExport"
                         class="w-1/2 py-2.5 text-xs font-bold text-white bg-amber-600 rounded-xl hover:bg-amber-500 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-download mr-1"></i> Download CSV
+                        <i class="fa-solid fa-download mr-1"></i> <span id="btnExportFormatLabel">Download PDF</span>
                     </button>
                 </div>
             </div>
@@ -2851,10 +2869,280 @@
         }
 
         let _currentExportType = 'submissions';
+        let _currentExportFormat = 'pdf';
+
+        function _getMadrasaBrandName() {
+            const s = appState.appSettings || {};
+            return s.madrasaName || s.madrasaname || 'Parammal Madrasa';
+        }
+
+        function _getEventSubtitle() {
+            const s = appState.appSettings || {};
+            return s.eventSubtitle || s.eventsubtitle || "Rabee'ul Awwal Seerah Quiz";
+        }
+
+        function _ensurePdfLibs() {
+            const jspdf = window.jspdf && window.jspdf.jsPDF ? window.jspdf.jsPDF : (window.jsPDF || null);
+            if (!jspdf) { showToast('PDF library is loading. Please try again in a moment.', 'error'); return null; }
+            let sample;
+            try { sample = new jspdf({ unit: 'pt' }); } catch (e) { sample = null; }
+            if (!sample || typeof sample.autoTable !== 'function') {
+                showToast('PDF table plugin missing.', 'error');
+                return null;
+            }
+            return jspdf;
+        }
+
+        function _buildPdfDoc(title, subtitle, targetDate, recordsCount) {
+            const jsPDF = _ensurePdfLibs();
+            if (!jsPDF) return null;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const madrasa = _getMadrasaBrandName();
+            const eventName = _getEventSubtitle();
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            doc.setFillColor(6, 78, 59);
+            doc.rect(0, 0, pageWidth, 88, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(madrasa, 40, 38);
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(eventName, 40, 58);
+            doc.setFontSize(9);
+            doc.setTextColor(251, 191, 36);
+            doc.text('Generated: ' + new Date().toLocaleString(), 40, 76);
+
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 40, 130);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            doc.text(subtitle, 40, 148);
+
+            const metaY = 176;
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(40, 162, pageWidth - 80, 44, 8, 8, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.roundedRect(40, 162, pageWidth - 80, 44, 8, 8, 'S');
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Report Date:', 56, metaY);
+            doc.text('Records:', pageWidth / 2, metaY);
+            doc.text('Export Type:', pageWidth / 2 + 120, metaY);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(51, 65, 85);
+            doc.text(targetDate, 56, metaY + 18);
+            doc.text(String(recordsCount), pageWidth / 2, metaY + 18);
+            doc.text(_currentExportFormat.toUpperCase(), pageWidth / 2 + 120, metaY + 18);
+
+            return doc;
+        }
+
+        function _finalizePdf(doc, fileName) {
+            try {
+                const totalPages = doc.internal.getNumberOfPages();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(148, 163, 184);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(_getMadrasaBrandName() + '  |  ' + _getEventSubtitle(), 40, pageHeight - 28);
+                    doc.text('Page ' + i + ' of ' + totalPages, pageWidth - 40, pageHeight - 28, { align: 'right' });
+                }
+                doc.save(fileName);
+                return true;
+            } catch (e) {
+                console.error('PDF save failed:', e);
+                showToast('Failed to generate PDF. Try CSV instead.', 'error');
+                return false;
+            }
+        }
+
+        function _submissionAccuracyClass(score, total, accuracyOnly) {
+            if (!total) return 'text-slate-500';
+            const pct = (score / total) * 100;
+            if (pct >= 80) return 'emerald';
+            if (pct >= 60) return 'amber';
+            return 'rose';
+        }
+
+        function generateSubmissionsPdf(rows, targetDate) {
+            const doc = _buildPdfDoc(
+                'Daily Quiz Submissions Report',
+                'Participant quiz results filtered by quiz date',
+                targetDate,
+                rows.length
+            );
+            if (!doc) return false;
+
+            const totalScore = rows.reduce((a, s) => a + Number(s.score || 0), 0);
+            const totalPossible = rows.reduce((a, s) => a + Number(s.totalPossible || 0), 0);
+            const avgAccuracy = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+            const passCount = rows.filter(s => Number(s.totalPossible || 0) > 0 && (Number(s.score) / Number(s.totalPossible)) >= 0.6).length;
+
+            const summaryY = 236;
+            const cardW = 124;
+            const cardH = 60;
+            const startX = 40;
+            const gap = 16;
+            doc.setDrawColor(226, 232, 240);
+            [
+                { title: 'Participants', value: String(rows.length), color: [16, 185, 129] },
+                { title: 'Total Score', value: totalScore + ' / ' + totalPossible, color: [5, 150, 105] },
+                { title: 'Avg Accuracy', value: avgAccuracy + '%', color: [245, 158, 11] },
+                { title: 'Passed (>=60%)', value: String(passCount) + ' (' + (rows.length ? Math.round((passCount / rows.length) * 100) : 0) + '%)', color: [217, 119, 6] }
+            ].forEach((c, i) => {
+                const x = startX + i * (cardW + gap);
+                doc.setFillColor(248, 250, 252);
+                doc.roundedRect(x, summaryY, cardW, cardH, 8, 8, 'F');
+                doc.setDrawColor(226, 232, 240);
+                doc.roundedRect(x, summaryY, cardW, cardH, 8, 8, 'S');
+                doc.setTextColor(c.color[0], c.color[1], c.color[2]);
+                doc.setFontSize(15);
+                doc.setFont('helvetica', 'bold');
+                doc.text(c.value, x + 14, summaryY + 34);
+                doc.setTextColor(100, 116, 139);
+                doc.setFontSize(8.5);
+                doc.setFont('helvetica', 'normal');
+                doc.text(c.title, x + 14, summaryY + 50);
+            });
+
+            const bodyData = rows.map((s, i) => {
+                const score = Number(s.score || 0);
+                const total = Number(s.totalPossible || 0);
+                const acc = total ? Math.round((score / total) * 100) + '%' : '-';
+                const mins = Math.floor((s.timeTakenSeconds || 0) / 60);
+                const secs = (s.timeTakenSeconds || 0) - mins * 60;
+                const timeTaken = mins ? `${mins}m ${String(secs).padStart(2, '0')}s` : `${s.timeTakenSeconds || 0}s`;
+                return [
+                    String(i + 1),
+                    String(s.participantName || ''),
+                    String(s.participantPhone || ''),
+                    s.quizDate || '',
+                    `${score} / ${total}`,
+                    acc,
+                    timeTaken,
+                    (s.completedAt ? new Date(s.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-')
+                ];
+            });
+
+            doc.autoTable({
+                startY: summaryY + 88,
+                head: [['#', 'Participant Name', 'Phone', 'Quiz Date', 'Score', 'Accuracy', 'Time', 'Submitted']],
+                body: bodyData,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 5, lineColor: [226, 232, 240], lineWidth: 0.4, textColor: [30, 41, 59] },
+                headStyles: {
+                    fillColor: [6, 78, 59],
+                    textColor: 255,
+                    fontSize: 8.5,
+                    fontStyle: 'bold',
+                    halign: 'center',
+                    valign: 'middle'
+                },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 22 },
+                    1: { fontStyle: 'bold', cellWidth: 'auto' },
+                    2: { halign: 'center', font: 'courier', cellWidth: 70 },
+                    3: { halign: 'center', cellWidth: 62 },
+                    4: { halign: 'center', cellWidth: 58 },
+                    5: { halign: 'center', cellWidth: 54 },
+                    6: { halign: 'center', cellWidth: 48 },
+                    7: { halign: 'center', cellWidth: 58 }
+                },
+                margin: { left: 40, right: 40 },
+                didParseCell: function (data) {
+                    if (data.section === 'body' && data.column.index === 5) {
+                        const txt = String(data.cell.raw);
+                        const pct = parseInt(txt, 10);
+                        if (!isNaN(pct)) {
+                            if (pct >= 80) { data.cell.styles.textColor = [5, 150, 105]; data.cell.styles.fontStyle = 'bold'; }
+                            else if (pct >= 60) { data.cell.styles.textColor = [217, 119, 6]; data.cell.styles.fontStyle = 'bold'; }
+                            else { data.cell.styles.textColor = [225, 29, 72]; data.cell.styles.fontStyle = 'bold'; }
+                        }
+                    }
+                }
+            });
+
+            return _finalizePdf(doc, `seerah_quiz_submissions_${targetDate}.pdf`);
+        }
+
+        function generateParticipantsPdf(rows, targetDate) {
+            const doc = _buildPdfDoc(
+                'Registered Participants Report',
+                'New participant registrations filtered by signup date',
+                targetDate,
+                rows.length
+            );
+            if (!doc) return false;
+
+            const summaryY = 236;
+            const cardW = 170;
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(226, 232, 240);
+            doc.roundedRect(40, summaryY, cardW, 60, 8, 8, 'F');
+            doc.roundedRect(40, summaryY, cardW, 60, 8, 8, 'S');
+            doc.roundedRect(40 + cardW + 16, summaryY, cardW, 60, 8, 8, 'F');
+            doc.roundedRect(40 + cardW + 16, summaryY, cardW, 60, 8, 8, 'S');
+            doc.setTextColor(16, 185, 129);
+            doc.setFontSize(15);
+            doc.setFont('helvetica', 'bold');
+            doc.text(String(rows.length), 56, summaryY + 34);
+            doc.setTextColor(245, 158, 11);
+            doc.text(String(new Set(rows.map(r => (r.phone || '').toString())).size), 56 + cardW + 16, summaryY + 34);
+            doc.setTextColor(100, 116, 139);
+            doc.setFontSize(8.5);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Total New Registrations', 56, summaryY + 50);
+            doc.text('Unique Phone Numbers', 56 + cardW + 16, summaryY + 50);
+
+            const bodyData = rows.map((p, i) => [
+                String(i + 1),
+                String(p.name || ''),
+                String(p.phone || ''),
+                p.created_at ? new Date(p.created_at).toLocaleString() : '-'
+            ]);
+
+            doc.autoTable({
+                startY: summaryY + 88,
+                head: [['#', 'Participant Name', 'Phone Number', 'Registered At']],
+                body: bodyData,
+                theme: 'grid',
+                styles: { fontSize: 9, cellPadding: 6, lineColor: [226, 232, 240], lineWidth: 0.4, textColor: [30, 41, 59] },
+                headStyles: {
+                    fillColor: [6, 78, 59],
+                    textColor: 255,
+                    fontSize: 9.5,
+                    fontStyle: 'bold',
+                    halign: 'center',
+                    valign: 'middle'
+                },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 28 },
+                    1: { fontStyle: 'bold', cellWidth: 'auto' },
+                    2: { halign: 'center', font: 'courier', cellWidth: 90 },
+                    3: { halign: 'center', cellWidth: 110 }
+                },
+                margin: { left: 40, right: 40 }
+            });
+
+            return _finalizePdf(doc, `madrasa_registered_users_${targetDate}.pdf`);
+        }
 
         function openDateExportModal() {
             _currentExportType = 'submissions';
+            _currentExportFormat = 'pdf';
             setExportType('submissions');
+            setExportFormat('pdf');
             const modal = document.getElementById('dateExportModal');
             const dateInput = document.getElementById('dateExportInput');
             const stats = document.getElementById('dateExportStats');
@@ -2869,6 +3157,30 @@
         function closeDateExportModal() {
             const modal = document.getElementById('dateExportModal');
             if (modal) modal.classList.add('hidden');
+        }
+
+        function setExportFormat(format) {
+            _currentExportFormat = format;
+            const btnCsv = document.getElementById('exportFormatCsv');
+            const btnPdf = document.getElementById('exportFormatPdf');
+            const label = document.getElementById('btnExportFormatLabel');
+            if (format === 'csv') {
+                if (btnCsv) {
+                    btnCsv.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-emerald-500 bg-emerald-50 text-emerald-700';
+                }
+                if (btnPdf) {
+                    btnPdf.className = 'py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50';
+                }
+                if (label) label.textContent = 'Download CSV';
+            } else {
+                if (btnPdf) {
+                    btnPdf.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-rose-500 bg-rose-50 text-rose-700';
+                }
+                if (btnCsv) {
+                    btnCsv.className = 'py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50';
+                }
+                if (label) label.textContent = 'Download PDF';
+            }
         }
 
         function setExportType(type) {
@@ -2970,16 +3282,24 @@
                     showToast(`No quiz submissions found for ${targetDate}`, 'error');
                     return;
                 }
-                let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec),Completed At\n';
-                exportable.forEach(s => {
-                    const name = String(s.participantName || '').replace(/"/g, '""');
-                    const phone = String(s.participantPhone || '').replace(/"/g, '""');
-                    const date = String(s.quizDate || '').replace(/"/g, '""');
-                    const completedAt = String(s.completedAt || '').replace(/"/g, '""');
-                    csv += `"${name}","${phone}","${date}",${s.score || 0},${s.totalPossible || 0},${s.timeTakenSeconds || 0},"${completedAt}"\n`;
-                });
-                triggerCsvDownload(csv, `seerah_quiz_submissions_${targetDate}.csv`);
-                showToast(`Exported ${exportable.length} submissions (${targetDate})`, 'success');
+                if (_currentExportFormat === 'pdf') {
+                    const ok = generateSubmissionsPdf(exportable, targetDate);
+                    if (ok) showToast(`Exported ${exportable.length} submissions PDF (${targetDate})`, 'success');
+                } else {
+                    let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec),Completed At,Accuracy\n';
+                    exportable.forEach(s => {
+                        const name = String(s.participantName || '').replace(/"/g, '""');
+                        const phone = String(s.participantPhone || '').replace(/"/g, '""');
+                        const date = String(s.quizDate || '').replace(/"/g, '""');
+                        const completedAt = String(s.completedAt || '').replace(/"/g, '""');
+                        const total = Number(s.totalPossible || 0);
+                        const score = Number(s.score || 0);
+                        const acc = total ? Math.round((score / total) * 100) + '%' : '';
+                        csv += `"${name}","${phone}","${date}",${score},${total},${s.timeTakenSeconds || 0},"${completedAt}","${acc}"\n`;
+                    });
+                    triggerCsvDownload(csv, `seerah_quiz_submissions_${targetDate}.csv`);
+                    showToast(`Exported ${exportable.length} submissions CSV (${targetDate})`, 'success');
+                }
             } else {
                 const exportable = [...(appState.participants || [])].filter(p => {
                     const day = getDateOnly(p.created_at || '');
@@ -2989,15 +3309,21 @@
                     showToast(`No registered users found for ${targetDate}`, 'error');
                     return;
                 }
-                let csv = 'Participant Name,Phone,Registered At\n';
-                exportable.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)).forEach(p => {
-                    const name = String(p.name || '').replace(/"/g, '""');
-                    const phone = String(p.phone || '').replace(/"/g, '""');
-                    const registered = String(p.created_at || '').replace(/"/g, '""');
-                    csv += `"${name}","${phone}","${registered}"\n`;
-                });
-                triggerCsvDownload(csv, `madrasa_registered_users_${targetDate}.csv`);
-                showToast(`Exported ${exportable.length} registered users (${targetDate})`, 'success');
+                exportable.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+                if (_currentExportFormat === 'pdf') {
+                    const ok = generateParticipantsPdf(exportable, targetDate);
+                    if (ok) showToast(`Exported ${exportable.length} users PDF (${targetDate})`, 'success');
+                } else {
+                    let csv = 'Participant Name,Phone,Registered At\n';
+                    exportable.forEach(p => {
+                        const name = String(p.name || '').replace(/"/g, '""');
+                        const phone = String(p.phone || '').replace(/"/g, '""');
+                        const registered = String(p.created_at || '').replace(/"/g, '""');
+                        csv += `"${name}","${phone}","${registered}"\n`;
+                    });
+                    triggerCsvDownload(csv, `madrasa_registered_users_${targetDate}.csv`);
+                    showToast(`Exported ${exportable.length} registered users CSV (${targetDate})`, 'success');
+                }
             }
             closeDateExportModal();
         }
