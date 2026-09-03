@@ -3552,6 +3552,7 @@
         }
 
         function openCreateQuizModal() {
+            appState._editingQuizId = null;
             document.getElementById('formQuizTitle').value = '';
             document.getElementById('formQuizDate').value = getTodayDateString();
             document.getElementById('formQuestionsContainer').innerHTML = '';
@@ -3561,6 +3562,7 @@
         }
 
         function closeCreateQuizModal() {
+            appState._editingQuizId = null;
             document.getElementById('quizFormModal').classList.add('hidden');
         }
 
@@ -3568,33 +3570,50 @@
             const containerId = (typeof targetContainerId === 'string' && targetContainerId) ? targetContainerId : 'formQuestionsContainer';
             const container = document.getElementById(containerId);
             if (!container) return;
-            const qCount = container.children.length + 1;
+            const qIndex = container.children.length;
 
-            const div = document.createElement('div');
-            div.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3 relative question-block";
-            div.innerHTML = `
+            const block = document.createElement('div');
+            block.className = 'question-block p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative';
+            block.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-700">Question ${qCount}</span>
-                    <button type="button" onclick="this.closest('.question-block').remove()" class="text-xs text-rose-500 hover:text-rose-700 font-bold">Remove</button>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Question #${qIndex + 1}</span>
+                    <button type="button" onclick="this.closest('.question-block').remove()" class="text-rose-500 hover:text-rose-700 text-xs font-bold">
+                        <i class="fa-solid fa-trash mr-1"></i> Remove
+                    </button>
                 </div>
-                <input type="text" placeholder="Question text..." required class="q-text w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" placeholder="Option A" required class="q-opt-0 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-                    <input type="text" placeholder="Option B" required class="q-opt-1 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-                    <input type="text" placeholder="Option C" required class="q-opt-2 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-                    <input type="text" placeholder="Option D" required class="q-opt-3 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Question Text</label>
+                    <input type="text" class="q-text w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none" required placeholder="e.g. What year was Prophet Muhammad ﷺ born?">
                 </div>
-                <div class="flex items-center space-x-3 pt-1">
-                    <span class="text-xs font-semibold text-slate-600">Correct Index:</span>
-                    <select class="q-correct px-2 py-1 text-xs rounded border border-slate-300">
-                        <option value="0">Option A (0)</option>
-                        <option value="1">Option B (1)</option>
-                        <option value="2">Option C (2)</option>
-                        <option value="3">Option D (3)</option>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Option A</label>
+                        <input type="text" class="q-opt-0 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Option B</label>
+                        <input type="text" class="q-opt-1 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Option C</label>
+                        <input type="text" class="q-opt-2 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Option D</label>
+                        <input type="text" class="q-opt-3 w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-brand-700 uppercase mb-1">Correct Option Answer</label>
+                    <select class="q-correct w-full px-3 py-1.5 text-xs font-bold rounded-lg border border-brand-300 bg-brand-50 text-brand-900 focus:outline-none">
+                        <option value="0">Option A (First choice)</option>
+                        <option value="1">Option B (Second choice)</option>
+                        <option value="2">Option C (Third choice)</option>
+                        <option value="3">Option D (Fourth choice)</option>
                     </select>
                 </div>
             `;
-            container.appendChild(div);
+            container.appendChild(block);
         }
 
         async function handleSaveQuiz(e) {
@@ -3605,7 +3624,7 @@
             }
             const title = document.getElementById('formQuizTitle').value.trim();
             const date = document.getElementById('formQuizDate').value;
-            const blocks = document.querySelectorAll('.question-block');
+            const blocks = document.querySelectorAll('#formQuestionsContainer .question-block');
 
             if (!title || !date) {
                 showToast('Title and Date are required', 'error');
@@ -3659,16 +3678,19 @@
                 return;
             }
 
+            const targetId = appState._editingQuizId || `quiz-${date}`;
             const newQuiz = {
-                id: `quiz-${date}`,
+                id: targetId,
                 date: date,
                 title: title,
+                isGrandQuiz: false,
                 questions: questions
             };
 
             appState._quizSaveLock = true;
             try {
-                const existingIdx = appState.quizzes.findIndex(q => q.date === date || q.id === newQuiz.id);
+                // Look for existing DAILY quiz only (!q.isGrandQuiz) so Grand Quizzes on same date are preserved!
+                const existingIdx = appState.quizzes.findIndex(q => !q.isGrandQuiz && (q.id === newQuiz.id || q.date === date));
                 if (existingIdx >= 0) {
                     newQuiz.id = appState.quizzes[existingIdx].id || newQuiz.id;
                     appState.quizzes[existingIdx] = newQuiz;
@@ -3681,7 +3703,6 @@
                 showToast('Daily quiz saved successfully!', 'success');
                 renderAdminView();
                 updateFeaturedQuizBanner();
-                showComingSoonModal(newQuiz);
             } catch (err) {
                 console.error(err);
                 showToast('Error saving quiz. Please try again.', 'error');
@@ -3925,9 +3946,10 @@
             }
 
             appState._quizSaveLock = true;
-            const existingIdx = appState.quizzes.findIndex(q => q.date === date);
+            const targetId = appState._editingGrandQuizId || `grandquiz-${timestampBase}`;
+            const existingIdx = appState.quizzes.findIndex(q => q.isGrandQuiz && (q.id === targetId || q.date === date));
             const quizObj = {
-                id: existingIdx >= 0 ? appState.quizzes[existingIdx].id : `grandquiz-${timestampBase}`,
+                id: existingIdx >= 0 ? appState.quizzes[existingIdx].id : targetId,
                 title: title,
                 date: date,
                 isGrandQuiz: true,
