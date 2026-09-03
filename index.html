@@ -1044,62 +1044,82 @@
             }
         }
 
+        // Fetches ALL rows from a Supabase table using range-based pagination.
+        // Supabase PostgREST caps each response at its server max_rows setting
+        // (commonly 1000, but some projects cap at 500). Without pagination any
+        // table that grows beyond that silently loses later rows — which was causing
+        // quiz 4/5/6/7 submissions to disappear from participant profiles.
+        async function fetchAllRows(table, pageSize = 500) {
+            let allRows = [];
+            let from = 0;
+            while (true) {
+                const { data, error } = await appState.supabaseClient
+                    .from(table)
+                    .select('*')
+                    .range(from, from + pageSize - 1);
+                if (error) throw error;
+                if (!data || data.length === 0) break;
+                allRows = allRows.concat(data);
+                if (data.length < pageSize) break; // last page
+                from += pageSize;
+            }
+            return allRows;
+        }
+
         async function loadData() {
             if (appState.isLiveSupabase && appState.supabaseClient) {
                 try {
-                    const { data: qData, error: qErr } = await appState.supabaseClient.from('quizzes').select('*');
-                    if (!qErr && qData) {
-                        appState.quizzes = qData.map(item => {
-                            try {
-                                const d = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
-                                if (d && d.id && d.date) return d;
-                                if (item.id && item.date && item.title && Array.isArray(item.questions)) {
-                                    return { id: item.id, date: item.date, title: item.title, questions: item.questions };
-                                }
-                                return d || item;
-                            } catch (e) {
-                                return item;
+                    // --- Quizzes (small table, single page is fine but paginate anyway) ---
+                    const qData = await fetchAllRows('quizzes', 500);
+                    appState.quizzes = qData.map(item => {
+                        try {
+                            const d = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                            if (d && d.id && d.date) return d;
+                            if (item.id && item.date && item.title && Array.isArray(item.questions)) {
+                                return { id: item.id, date: item.date, title: item.title, questions: item.questions };
                             }
-                        }).filter(q => q && q.id);
-                    }
+                            return d || item;
+                        } catch (e) {
+                            return item;
+                        }
+                    }).filter(q => q && q.id);
 
-                    const { data: sData, error: sErr } = await appState.supabaseClient.from('submissions').select('*');
-                    if (!sErr && sData) {
-                        appState.submissions = sData.map(item => {
-                            try {
-                                const d = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
-                                if (d && d.id) return d;
-                                if (item.id && item.quizdate !== undefined) {
-                                    return {
-                                        id: item.id,
-                                        participantName: item.participantname || item.participantName,
-                                        participantPhone: item.participantphone || item.participantPhone,
-                                        quizId: item.quizid || item.quizId,
-                                        quizDate: item.quizdate || item.quizDate,
-                                        score: item.score,
-                                        totalPossible: item.totalpossible || item.totalPossible,
-                                        answers: typeof item.answers === 'string' ? JSON.parse(item.answers) : item.answers,
-                                        completedAt: item.completedat || item.completedAt,
-                                        timeTakenSeconds: item.timetakenseconds || item.timeTakenSeconds
-                                    };
-                                }
-                                return d || item;
-                            } catch (e) {
-                                return item;
+                    // --- Submissions (PAGINATED — this table grows beyond the default row cap) ---
+                    const sData = await fetchAllRows('submissions', 500);
+                    appState.submissions = sData.map(item => {
+                        try {
+                            const d = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                            if (d && d.id) return d;
+                            if (item.id && item.quizdate !== undefined) {
+                                return {
+                                    id: item.id,
+                                    participantName: item.participantname || item.participantName,
+                                    participantPhone: item.participantphone || item.participantPhone,
+                                    quizId: item.quizid || item.quizId,
+                                    quizDate: item.quizdate || item.quizDate,
+                                    score: item.score,
+                                    totalPossible: item.totalpossible || item.totalPossible,
+                                    answers: typeof item.answers === 'string' ? JSON.parse(item.answers) : item.answers,
+                                    completedAt: item.completedat || item.completedAt,
+                                    timeTakenSeconds: item.timetakenseconds || item.timeTakenSeconds
+                                };
                             }
-                        }).filter(s => s && s.id);
-                    }
-                    
-                    const { data: pData, error: pErr } = await appState.supabaseClient.from('participants').select('*');
-                    if (!pErr && pData) {
-                        appState.participants = pData.map(p => ({
-                            name: p.name,
-                            phone: normalizePhone(p.phone),
-                            created_at: p.created_at || new Date().toISOString()
-                        })).filter(p => p.phone);
-                        deduplicateParticipants();
-                    }
-                    
+                            return d || item;
+                        } catch (e) {
+                            return item;
+                        }
+                    }).filter(s => s && s.id);
+
+                    // --- Participants ---
+                    const pData = await fetchAllRows('participants', 500);
+                    appState.participants = pData.map(p => ({
+                        name: p.name,
+                        phone: normalizePhone(p.phone),
+                        created_at: p.created_at || new Date().toISOString()
+                    })).filter(p => p.phone);
+                    deduplicateParticipants();
+
+                    // --- App Settings ---
                     const { data: setts, error: settsErr } = await appState.supabaseClient.from('app_settings').select('*').limit(1);
                     if (!settsErr && setts && setts.length > 0) {
                         appState.appSettings = normalizeSettings(setts[0]);
