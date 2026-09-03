@@ -556,14 +556,18 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button onclick="openCreateQuizModal()"
                         class="py-2 px-2 sm:px-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-plus-circle"></i><span class="hidden sm:inline">Add Daily Quiz</span><span class="sm:hidden">Add Quiz</span>
                     </button>
                     <button onclick="exportParticipantsData()"
                         class="py-2 px-2 sm:px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Export CSV</span><span class="sm:hidden">Export</span>
+                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Export All</span><span class="sm:hidden">All CSV</span>
+                    </button>
+                    <button onclick="openDateExportModal()"
+                        class="py-2 px-2 sm:px-3.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold border border-amber-500 shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-calendar-day"></i><span class="hidden sm:inline">Export By Date</span><span class="sm:hidden">By Date</span>
                     </button>
                     <button onclick="exitAdminView()"
                         class="py-2 px-2 sm:px-3.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl text-xs font-semibold border border-rose-500/30 transition-all flex items-center justify-center gap-1.5">
@@ -826,6 +830,71 @@
                     <button onclick="verifyAdminPasscode()"
                         class="w-1/2 py-2 text-xs font-bold bg-slate-900 text-white rounded-lg hover:bg-slate-800">Login
                         Admin</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Export Data By Date -->
+        <div id="dateExportModal"
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative space-y-5">
+                <button onclick="closeDateExportModal()"
+                    class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="text-center space-y-2">
+                    <div
+                        class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-calendar-day"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900">Export Data By Date</h3>
+                    <p class="text-xs text-slate-500">Filter participants or quiz submissions for a specific day</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Export Type</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="setExportType('submissions')" id="exportTypeSubmissions"
+                                class="py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-brand-500 bg-brand-50 text-brand-700">
+                                <i class="fa-solid fa-file-lines mr-1"></i> Quiz Submissions
+                            </button>
+                            <button type="button" onclick="setExportType('participants')" id="exportTypeParticipants"
+                                class="py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
+                                <i class="fa-solid fa-users mr-1"></i> Registered Users
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Date</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-calendar absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                            <input type="date" id="dateExportInput" onchange="updateDateExportStats()" oninput="updateDateExportStats()"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none transition-all">
+                        </div>
+                        <p id="dateExportHint" class="text-[11px] text-slate-400 mt-1.5">
+                            <i class="fa-solid fa-circle-info mr-1"></i> Returns submissions for this quiz date.
+                        </p>
+                    </div>
+
+                    <div id="dateExportStats" class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs text-slate-600 hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold">Records found:</span>
+                            <span id="dateExportCount" class="font-extrabold text-brand-700">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2 pt-1">
+                    <button onclick="closeDateExportModal()"
+                        class="w-1/2 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200">Cancel</button>
+                    <button onclick="executeDateExport()" id="btnExecuteDateExport"
+                        class="w-1/2 py-2.5 text-xs font-bold text-white bg-amber-600 rounded-xl hover:bg-amber-500 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-download mr-1"></i> Download CSV
+                    </button>
                 </div>
             </div>
         </div>
@@ -2779,6 +2848,158 @@
             try { document.body.removeChild(a); } catch(e) {}
             setTimeout(() => { try { window.URL.revokeObjectURL(url); } catch(e) {} }, 1000);
             showToast('Exported CSV dataset', 'success');
+        }
+
+        let _currentExportType = 'submissions';
+
+        function openDateExportModal() {
+            _currentExportType = 'submissions';
+            setExportType('submissions');
+            const modal = document.getElementById('dateExportModal');
+            const dateInput = document.getElementById('dateExportInput');
+            const stats = document.getElementById('dateExportStats');
+            const countEl = document.getElementById('dateExportCount');
+            if (dateInput) dateInput.value = getTodayDateString();
+            if (stats) stats.classList.add('hidden');
+            if (countEl) countEl.textContent = '0';
+            if (modal) modal.classList.remove('hidden');
+            updateDateExportStats();
+        }
+
+        function closeDateExportModal() {
+            const modal = document.getElementById('dateExportModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setExportType(type) {
+            _currentExportType = type;
+            const btnSub = document.getElementById('exportTypeSubmissions');
+            const btnPart = document.getElementById('exportTypeParticipants');
+            const hint = document.getElementById('dateExportHint');
+            if (type === 'submissions') {
+                if (btnSub) {
+                    btnSub.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-brand-500 bg-brand-50 text-brand-700';
+                }
+                if (btnPart) {
+                    btnPart.className = 'py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50';
+                }
+                if (hint) hint.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> Returns submissions for this quiz date.';
+            } else {
+                if (btnPart) {
+                    btnPart.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border-2 transition-all border-brand-500 bg-brand-50 text-brand-700';
+                }
+                if (btnSub) {
+                    btnSub.className = 'py-2.5 px-3 rounded-xl text-xs font-semibold border-2 transition-all border-slate-200 bg-white text-slate-500 hover:bg-slate-50';
+                }
+                if (hint) hint.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> Returns users who registered / signed in on this date.';
+            }
+            updateDateExportStats();
+        }
+
+        function updateDateExportStats() {
+            const dateInput = document.getElementById('dateExportInput');
+            const stats = document.getElementById('dateExportStats');
+            const countEl = document.getElementById('dateExportCount');
+            const btn = document.getElementById('btnExecuteDateExport');
+            if (!dateInput || !stats || !countEl || !btn) return;
+            const date = dateInput.value;
+            if (!date) { stats.classList.add('hidden'); countEl.textContent = '0'; btn.disabled = true; return; }
+            let count = 0;
+            if (_currentExportType === 'submissions') {
+                const seen = {};
+                [...(appState.submissions || [])].forEach(s => {
+                    const norm = normalizePhone(s.participantPhone);
+                    if (!norm) return;
+                    const k = `${norm}__${s.quizDate}`;
+                    if (seen[k]) return;
+                    seen[k] = true;
+                    if ((s.quizDate || '') === date) count++;
+                });
+            } else {
+                [...(appState.participants || [])].forEach(p => {
+                    const ca = p.created_at || '';
+                    const day = ca ? ca.slice(0, 10) : '';
+                    if (day === date) count++;
+                });
+            }
+            stats.classList.remove('hidden');
+            countEl.textContent = count;
+            btn.disabled = count === 0;
+        }
+
+        function getDateOnly(iso) {
+            if (!iso) return '';
+            return String(iso).slice(0, 10);
+        }
+
+        function triggerCsvDownload(csvContent, fileName) {
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            try { document.body.removeChild(a); } catch(e) {}
+            setTimeout(() => { try { window.URL.revokeObjectURL(url); } catch(e) {} }, 1000);
+        }
+
+        function executeDateExport() {
+            const dateInput = document.getElementById('dateExportInput');
+            if (!dateInput || !dateInput.value) {
+                showToast('Please select a date first', 'error');
+                return;
+            }
+            const targetDate = dateInput.value;
+            if (_currentExportType === 'submissions') {
+                const seen = {};
+                const exportable = [];
+                [...(appState.submissions || [])]
+                    .sort((a, b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0))
+                    .forEach(s => {
+                        const norm = normalizePhone(s.participantPhone);
+                        if (!norm) return;
+                        const k = `${norm}__${s.quizDate}`;
+                        if (seen[k]) return;
+                        seen[k] = true;
+                        if ((s.quizDate || '') === targetDate) {
+                            exportable.push({ ...s, participantPhone: norm });
+                        }
+                    });
+                if (exportable.length === 0) {
+                    showToast(`No quiz submissions found for ${targetDate}`, 'error');
+                    return;
+                }
+                let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec),Completed At\n';
+                exportable.forEach(s => {
+                    const name = String(s.participantName || '').replace(/"/g, '""');
+                    const phone = String(s.participantPhone || '').replace(/"/g, '""');
+                    const date = String(s.quizDate || '').replace(/"/g, '""');
+                    const completedAt = String(s.completedAt || '').replace(/"/g, '""');
+                    csv += `"${name}","${phone}","${date}",${s.score || 0},${s.totalPossible || 0},${s.timeTakenSeconds || 0},"${completedAt}"\n`;
+                });
+                triggerCsvDownload(csv, `seerah_quiz_submissions_${targetDate}.csv`);
+                showToast(`Exported ${exportable.length} submissions (${targetDate})`, 'success');
+            } else {
+                const exportable = [...(appState.participants || [])].filter(p => {
+                    const day = getDateOnly(p.created_at || '');
+                    return day === targetDate;
+                }).map(p => ({ ...p, phone: normalizePhone(p.phone) })).filter(p => p.phone);
+                if (exportable.length === 0) {
+                    showToast(`No registered users found for ${targetDate}`, 'error');
+                    return;
+                }
+                let csv = 'Participant Name,Phone,Registered At\n';
+                exportable.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)).forEach(p => {
+                    const name = String(p.name || '').replace(/"/g, '""');
+                    const phone = String(p.phone || '').replace(/"/g, '""');
+                    const registered = String(p.created_at || '').replace(/"/g, '""');
+                    csv += `"${name}","${phone}","${registered}"\n`;
+                });
+                triggerCsvDownload(csv, `madrasa_registered_users_${targetDate}.csv`);
+                showToast(`Exported ${exportable.length} registered users (${targetDate})`, 'success');
+            }
+            closeDateExportModal();
         }
 
         function showToast(msg, type = 'info') {
