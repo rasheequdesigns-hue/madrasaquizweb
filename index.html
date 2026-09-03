@@ -7,7 +7,7 @@
     <title>Parammal Madrasa - Rabee'ul Awwal Daily Seerah Quiz</title>
 
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"><\/script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -34,7 +34,10 @@
                 }
             }
         }
-    <\/script>
+    </script>
+
+    <!-- SVG Mosque Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,19 +55,20 @@
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- jsPDF + AutoTable CDN for PDF exports -->
+    <!-- jsPDF + AutoTable + html2canvas CDN for PDF exports -->
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <style>
         .glass-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .gradient-banner {
-            background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #047857 100%);
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
         }
 
         .gold-banner {
@@ -116,8 +120,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
                 <div
-                    class="w-10 h-10 rounded-xl gradient-banner flex items-center justify-center text-amber-300 shadow-md shadow-emerald-700/20">
-                    <i class="fa-solid fa-mosque text-lg"></i>
+                    class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 flex items-center justify-center text-amber-300 shadow-lg shadow-emerald-900/30 border-2 border-emerald-400/40">
+                    <i class="fa-solid fa-mosque text-xl"></i>
                 </div>
                 <div>
                     <span class="text-xl font-extrabold text-slate-900 tracking-tight"><span class="dyn-madrasa-1">Parammal</span> <span class="text-brand-600 dyn-madrasa-2">Madrasa</span></span>
@@ -132,13 +136,14 @@
                 <!-- Current User Profile Link Button -->
                 <div id="userInfoHeader" class="hidden flex items-center space-x-2">
                     <button onclick="switchView('studentDashboard')"
-                        class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors">
+                        class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border-2 border-emerald-300 hover:bg-emerald-100 transition-all shadow-sm">
                         <i class="fa-solid fa-circle-user text-emerald-600 text-base"></i>
-                        <span class="text-xs font-bold" id="userHeaderName">Participant Profile</span>
+                        <span class="text-xs font-extrabold" id="userHeaderName">Participant Profile</span>
                     </button>
-                    <button onclick="logoutParticipant()"
-                        class="text-xs text-rose-600 hover:text-rose-700 font-semibold px-2 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200">
-                        <i class="fa-solid fa-sign-out-alt"></i>
+                    <button onclick="logoutParticipant()" title="Logout"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 text-xs font-extrabold transition-all shadow-sm">
+                        <i class="fa-solid fa-right-from-bracket text-rose-600 text-sm"></i>
+                        <span>Logout</span>
                     </button>
                 </div>
 
@@ -560,55 +565,66 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <button onclick="openCreateQuizModal()"
-                        class="py-2 px-2 sm:px-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-plus-circle"></i><span class="hidden sm:inline">Add Daily Quiz</span><span class="sm:hidden">Add Quiz</span>
+                        class="py-2.5 px-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle text-sm"></i>
+                        <span>Add Daily Quiz</span>
                     </button>
                     <button onclick="exportParticipantsData()"
-                        class="py-2 px-2 sm:px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-download"></i><span class="hidden sm:inline">Export All</span><span class="sm:hidden">All CSV</span>
+                        class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold border border-slate-700 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-download text-sm text-emerald-400"></i>
+                        <span>Export All (CSV)</span>
                     </button>
                     <button onclick="openDateExportModal()"
-                        class="py-2 px-2 sm:px-3.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold border border-amber-500 shadow-md transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-calendar-day"></i><span class="hidden sm:inline">Export By Date</span><span class="sm:hidden">By Date</span>
+                        class="py-2.5 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold border border-amber-500 shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-calendar-day text-sm"></i>
+                        <span>Export By Date</span>
                     </button>
                     <button onclick="exitAdminView()"
-                        class="py-2 px-2 sm:px-3.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl text-xs font-semibold border border-rose-500/30 transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-right-from-bracket"></i><span class="hidden sm:inline">Exit Admin</span><span class="sm:hidden">Exit</span>
+                        class="py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                        <span>Exit Admin</span>
                     </button>
                 </div>
             </div>
 
             <!-- Admin Navigation Tabs -->
-            <div class="flex space-x-2 border-b border-slate-200 pb-1 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 -mx-1 px-1">
+            <div class="flex space-x-2 border-b border-slate-200 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 -mx-1 px-1">
                 <button onclick="switchAdminTab('leaderboard')" id="tabBtnLeaderboard"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-trophy mr-1.5"></i><span class="hidden sm:inline">Leaderboard & High Marks</span><span class="sm:hidden">Leaderboard</span>
+                    class="px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md border-2 border-emerald-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-trophy text-amber-300 text-sm"></i>
+                    <span>Leaderboard & High Marks</span>
                 </button>
                 <button onclick="switchAdminTab('quizzes')" id="tabBtnQuizzes"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-list-check mr-1.5"></i><span class="hidden sm:inline">Daily Questions & Links</span><span class="sm:hidden">Questions</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-blue-50 text-blue-900 hover:bg-blue-100 border-2 border-blue-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-blue-600 text-sm"></i>
+                    <span>Daily Questions & Links</span>
                 </button>
                 <button onclick="switchAdminTab('grandquiz')" id="tabBtnGrandQuiz"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 hover:bg-amber-50 border border-amber-200 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-crown mr-1.5"></i><span class="hidden sm:inline">Grand Quiz & Awards</span><span class="sm:hidden">Grand Quiz</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 border-2 border-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-crown text-amber-500 text-sm"></i>
+                    <span>Grand Quiz & Cash Awards</span>
                 </button>
                 <button onclick="switchAdminTab('students')" id="tabBtnStudents"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-users mr-1.5"></i><span class="hidden sm:inline">All Participants Data</span><span class="sm:hidden">Participants</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-purple-50 text-purple-900 hover:bg-purple-100 border-2 border-purple-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-users text-purple-600 text-sm"></i>
+                    <span>All Participants Data</span>
                 </button>
                 <button onclick="switchAdminTab('manual')" id="tabBtnManual"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-200 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-pen-to-square mr-1.5"></i><span class="hidden sm:inline">Manual Entry</span><span class="sm:hidden">Manual</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border-2 border-indigo-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-to-square text-indigo-600 text-sm"></i>
+                    <span>Manual Entry & Marks</span>
                 </button>
                 <button onclick="switchAdminTab('settings')" id="tabBtnSettings"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-gear mr-1.5"></i><span class="hidden sm:inline">Settings</span><span class="sm:hidden">Settings</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border-2 border-slate-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-gear text-slate-600 text-sm"></i>
+                    <span>Settings</span>
                 </button>
                 <button onclick="switchAdminTab('users')" id="tabBtnUsers"
-                    class="px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0">
-                    <i class="fa-solid fa-address-book mr-1.5"></i><span class="hidden sm:inline">Registered Users</span><span class="sm:hidden">Users</span>
+                    class="px-3.5 py-2.5 text-xs font-bold rounded-xl bg-teal-50 text-teal-900 hover:bg-teal-100 border-2 border-teal-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-address-book text-teal-600 text-sm"></i>
+                    <span>Registered Users</span>
                 </button>
             </div>
 
@@ -691,7 +707,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-bold text-slate-900">Grand Quiz Management</h3>
-                                    <p class="text-xs text-slate-600">Create mega quizzes with 10+ questions and cash awards for top scorers</p>
+                                    <p class="text-xs text-slate-600">Create special grand quizzes with custom questions and cash awards for top scorers</p>
                                 </div>
                             </div>
                         </div>
@@ -718,7 +734,7 @@
                         <!-- Dynamic Grand Quiz cards (empty -> injected) -->
                         <div class="col-span-full text-center text-slate-400 py-10 text-xs">
                             <i class="fa-solid fa-crown text-amber-300 text-3xl block mb-2"></i>
-                            No Grand Quizzes yet. Click <span class="font-bold text-amber-600">"Create Grand Quiz"</span> above to create one with 10+ questions and a cash award.
+                            No Grand Quizzes yet. Click <span class="font-bold text-amber-600">"Create Grand Quiz"</span> above to create one.
                         </div>
                     </div>
                 </div>
@@ -797,32 +813,51 @@
                 <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden p-5 sm:p-6 space-y-4">
                     <h3 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-3 mb-1">New Manual Entry Form</h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                <i class="fa-solid fa-user mr-1 text-indigo-500"></i> Select Participant
+                    <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <label class="block text-xs font-extrabold text-indigo-950 uppercase tracking-wider">
+                                <i class="fa-solid fa-magnifying-glass mr-1 text-indigo-600"></i> Search & Select Participant Profile
                             </label>
-                            <div class="relative">
-                                <select id="manualEntryParticipantSelect"
-                                    class="w-full px-3 py-2.5 pr-9 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none appearance-none">
-                                    <option value="">-- Choose a registered participant --</option>
-                                </select>
-                                <i class="fa-solid fa-caret-down absolute right-3.5 top-3.5 text-slate-400 pointer-events-none"></i>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-1.5">
-                                If participant is not listed, first register them via the Home login form.
-                            </p>
+                            <span id="manualParticipantSearchCount" class="text-[11px] font-bold text-indigo-600 bg-white px-2.5 py-0.5 rounded-full border border-indigo-200 w-fit">
+                                0 profiles registered
+                            </span>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                <i class="fa-solid fa-calendar-day mr-1 text-indigo-500"></i> Quiz Date
-                            </label>
-                            <input type="date" id="manualEntryQuizDate"
-                                class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <p class="text-[11px] text-slate-400 mt-1.5">
-                                Submission will be linked to this quiz date.  If a quiz exists on this date it will auto-use its question count as max score.
-                            </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Live Search Input -->
+                            <div class="relative">
+                                <input type="text" id="manualEntrySearchInput" oninput="filterManualParticipants(this.value)"
+                                    placeholder="🔍 Type Name or Phone Number..."
+                                    class="w-full pl-9 pr-8 py-2.5 text-sm rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white font-medium">
+                                <i class="fa-solid fa-search absolute left-3 top-3.5 text-indigo-400"></i>
+                                <button type="button" onclick="clearManualSearch()" id="btnClearManualSearch" class="hidden absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-sm">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+
+                            <!-- Filtered Dropdown Select -->
+                            <div class="relative">
+                                <select id="manualEntryParticipantSelect"
+                                    class="w-full px-3 py-2.5 pr-9 text-sm font-bold rounded-lg border border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none appearance-none bg-white text-indigo-900">
+                                    <option value="">-- Choose a registered participant --</option>
+                                </select>
+                                <i class="fa-solid fa-caret-down absolute right-3.5 top-3.5 text-indigo-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                    <i class="fa-solid fa-calendar-day mr-1 text-indigo-500"></i> Quiz Date
+                                </label>
+                                <input type="date" id="manualEntryQuizDate"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div class="flex items-end">
+                                <p class="text-[11px] text-slate-500">
+                                    <i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i> Filter participants by typing name/phone. Selected profile history will automatically bind to the quiz date.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -877,10 +912,10 @@
                     <div class="border-t border-slate-200 pt-4 flex items-center justify-end gap-2">
                         <button type="button" onclick="resetManualEntryForm()"
                             class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">
-                            Reset
+                            Reset Form
                         </button>
                         <button type="button" onclick="submitManualEntry()"
-                            class="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg shadow-md flex items-center gap-1.5">
+                            class="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-800 rounded-xl shadow-md flex items-center gap-1.5">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Save Manual Entry
                         </button>
@@ -1044,7 +1079,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-slate-900" id="grandQuizModalTitle">Create Grand Quiz</h3>
-                        <p class="text-xs text-slate-500">Grand quizzes feature 10+ questions, gold highlighting, and optional cash award for top scorer</p>
+                        <p class="text-xs text-slate-500">Grand quizzes feature custom questions, gold highlighting, and optional cash award for top scorer</p>
                     </div>
                 </div>
 
@@ -1064,30 +1099,49 @@
                     </div>
 
                     <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 space-y-3">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
-                            <i class="fa-solid fa-trophy"></i>
-                            Cash Award & Prize Settings
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-trophy text-amber-600"></i> Cash Awards & Podium Prize Settings</span>
+                            <span class="text-[10px] font-semibold text-amber-700">1st, 2nd & 3rd Prizes</span>
                         </h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                    Cash Award Amount (₹ INR)
+                                <label class="block text-xs font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    <span>🥇 1st Prize (₹)</span>
                                 </label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-2.5 text-slate-500 font-bold">₹</span>
-                                    <input type="number" id="grandQuizCashAward" min="0" step="50" value="500"
-                                        class="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-amber-300 bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                                    <span class="absolute left-3 top-2.5 text-amber-700 font-bold text-xs">₹</span>
+                                    <input type="number" id="grandQuizPrize1" min="0" step="50" value="500" placeholder="500"
+                                        class="w-full pl-7 pr-2 py-2 text-xs rounded-lg border border-amber-300 bg-white font-bold text-amber-900 focus:ring-2 focus:ring-amber-400 focus:outline-none">
                                 </div>
-                                <p class="text-[11px] text-slate-500 mt-1">0 = No cash prize (still a Grand Quiz with gold highlight)</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                    Number of Questions (recommended 10+)
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    <span>🥈 2nd Prize (₹)</span>
                                 </label>
-                                <input type="number" id="grandQuizInitialQuestions" min="3" step="1" value="10" onchange="autoAddGrandQuestions(this.value)"
-                                    class="w-full px-3 py-2 text-sm rounded-lg border border-amber-300 bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
-                                <p class="text-[11px] text-slate-500 mt-1">Click to pre-fill that many empty question slots</p>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-slate-500 font-bold text-xs">₹</span>
+                                    <input type="number" id="grandQuizPrize2" min="0" step="50" value="300" placeholder="Optional"
+                                        class="w-full pl-7 pr-2 py-2 text-xs rounded-lg border border-slate-300 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                                </div>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    <span>🥉 3rd Prize (₹)</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-amber-700 font-bold text-xs">₹</span>
+                                    <input type="number" id="grandQuizPrize3" min="0" step="50" value="200" placeholder="Optional"
+                                        class="w-full pl-7 pr-2 py-2 text-xs rounded-lg border border-amber-300/80 bg-white font-bold text-amber-900 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-amber-200/60">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                Number of Initial Questions
+                            </label>
+                            <input type="number" id="grandQuizInitialQuestions" min="1" step="1" value="5" onchange="autoAddGrandQuestions(this.value)"
+                                class="w-full px-3 py-2 text-xs rounded-lg border border-amber-300 bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            <p class="text-[11px] text-slate-500 mt-1">Click to pre-fill that many empty question slots</p>
                         </div>
                     </div>
 
@@ -1120,6 +1174,151 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal: Coming Soon Countdown Popup -->
+        <div id="comingSoonModal"
+            class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
+            <div
+                class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-6 overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute -top-12 -right-12 w-36 h-36 bg-amber-400/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <button onclick="closeComingSoonModal()"
+                    class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="space-y-2">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white text-xs font-bold shadow-md">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span id="csModalBadge">Quiz Status: Coming Soon</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight" id="csModalTitle">Grand Quiz Title</h3>
+                    <p class="text-xs font-medium text-slate-500" id="csModalSubtitle">Starts on scheduled date</p>
+                </div>
+
+                <!-- Live Countdown Grid -->
+                <div class="grid grid-cols-4 gap-2 sm:gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-inner">
+                    <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
+                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csDays">00</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Days</div>
+                    </div>
+                    <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
+                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csHours">00</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Hours</div>
+                    </div>
+                    <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
+                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csMins">00</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Mins</div>
+                    </div>
+                    <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
+                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider animate-pulse" id="csSecs">00</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Secs</div>
+                    </div>
+                </div>
+
+                <!-- Staggered Animated Prize Podium Section -->
+                <div id="csPrizesContainer" class="hidden space-y-2 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 p-3.5 rounded-2xl border border-amber-300/60 shadow-sm">
+                    <div class="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center justify-center gap-1.5 mb-2">
+                        <i class="fa-solid fa-award text-amber-600 animate-bounce"></i>
+                        <span>Grand Cash Awards Podium</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- 1st Prize Card -->
+                        <div id="prizeCard1" class="bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-950 p-2.5 rounded-xl text-center shadow-md border border-amber-300 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
+                            <div class="text-xl">🥇</div>
+                            <div class="text-[10px] font-black uppercase tracking-wider">1st Prize</div>
+                            <div class="text-sm font-black mt-0.5" id="csPrize1Val">₹500</div>
+                        </div>
+                        <!-- 2nd Prize Card -->
+                        <div id="prizeCard2" class="bg-gradient-to-b from-slate-200 via-slate-100 to-slate-300 text-slate-800 p-2.5 rounded-xl text-center shadow-md border border-slate-300 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
+                            <div class="text-xl">🥈</div>
+                            <div class="text-[10px] font-black uppercase tracking-wider">2nd Prize</div>
+                            <div class="text-sm font-black mt-0.5" id="csPrize2Val">₹300</div>
+                        </div>
+                        <!-- 3rd Prize Card -->
+                        <div id="prizeCard3" class="bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-100 p-2.5 rounded-xl text-center shadow-md border border-amber-600 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
+                            <div class="text-xl">🥉</div>
+                            <div class="text-[10px] font-black uppercase tracking-wider">3rd Prize</div>
+                            <div class="text-sm font-black mt-0.5" id="csPrize3Val">₹200</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-amber-900 font-medium flex items-center justify-between gap-2">
+                    <span class="truncate"><i class="fa-solid fa-link text-amber-600 mr-1.5"></i>Share link with participants:</span>
+                    <button onclick="copyComingSoonQuizLink()" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow transition-all whitespace-nowrap">
+                        <i class="fa-solid fa-copy mr-1"></i>Copy Link
+                    </button>
+                </div>
+
+                <button onclick="closeComingSoonModal()"
+                    class="w-full py-3 bg-gradient-to-r from-slate-800 to-indigo-950 hover:from-slate-900 hover:to-indigo-900 text-white font-bold text-sm rounded-xl shadow-lg transition-all">
+                    Got it! Close Preview
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal: The Quiz Finale Winner Declaration Popup -->
+        <div id="quizFinaleModal"
+            class="fixed inset-0 z-[90] hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div
+                class="bg-gradient-to-b from-slate-900 via-slate-800 to-amber-950 text-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-6 overflow-hidden">
+                <!-- Background Glowing Orbs -->
+                <div class="absolute -top-16 -right-16 w-44 h-44 bg-amber-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-16 -left-16 w-44 h-44 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <button onclick="closeQuizFinaleModal()"
+                    class="absolute top-4 right-4 text-amber-200/70 hover:text-white text-lg transition-colors z-10">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <!-- Top Header Badge -->
+                <div class="space-y-3 relative z-10">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-amber-500/30">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>The Quiz Finale Championship</span>
+                    </div>
+
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 flex items-center justify-center text-amber-950 text-4xl shadow-xl border-4 border-amber-200/50 animate-pulse">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+
+                    <h2 class="text-3xl font-black text-amber-300 tracking-tight drop-shadow-md">
+                        GRAND CHAMPION DECLARED!
+                    </h2>
+                    <p class="text-xs text-amber-100/80 font-medium" id="finaleQuizTitle">Seerah Final Championship Grand Quiz</p>
+                </div>
+
+                <!-- Winner Card Box -->
+                <div class="bg-slate-900/90 rounded-2xl p-5 border border-amber-400/40 shadow-inner space-y-3 relative z-10">
+                    <div class="text-[11px] font-bold text-amber-400 uppercase tracking-widest">🏆 #1 Ranked Winner</div>
+                    <div class="text-2xl font-black text-white" id="finaleWinnerName">Participant Name</div>
+                    <div class="text-xs font-mono text-amber-200/80" id="finaleWinnerPhone">Phone: 9000000000</div>
+
+                    <div class="grid grid-cols-2 gap-3 border-t border-amber-400/20 pt-3">
+                        <div class="bg-slate-800/80 p-2.5 rounded-xl border border-amber-400/20">
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">Total Score</div>
+                            <div class="text-lg font-black text-emerald-400" id="finaleWinnerScore">10 / 10</div>
+                        </div>
+                        <div class="bg-slate-800/80 p-2.5 rounded-xl border border-amber-400/20">
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">Cash Award</div>
+                            <div class="text-lg font-black text-amber-300" id="finaleWinnerPrize">₹500 INR</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-2 relative z-10">
+                    <button onclick="closeQuizFinaleModal()"
+                        class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-sm rounded-xl shadow-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>Awesome! Celebrate Finale</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1254,6 +1453,7 @@
 
         let appState = {
             participants: [],
+            deletedParticipants: [],
             appSettings: { adminPasscode: null, madrasaName: 'Parammal Madrasa', eventSubtitle: 'Rabee\'ul Awwal Special', adminpasscode: null, madrasaname: 'Parammal Madrasa', eventsubtitle: 'Rabee\'ul Awwal Special' },
             currentView: 'home',
             adminAuthenticated: false,
@@ -1270,6 +1470,31 @@
             submissions: [],
             _quizSaveLock: false
         };
+
+        function getDeletedParticipants() {
+            if (!appState.deletedParticipants || !Array.isArray(appState.deletedParticipants)) {
+                const saved = localStorage.getItem('dailyquiz_deleted_participants_v3');
+                appState.deletedParticipants = saved ? (() => { try { return JSON.parse(saved); } catch(e) { return []; } })() : [];
+            }
+            return appState.deletedParticipants;
+        }
+
+        function isDeletedParticipant(phone) {
+            const norm = normalizePhone(phone);
+            if (!norm) return false;
+            return getDeletedParticipants().includes(norm);
+        }
+
+        function addDeletedParticipant(phone) {
+            const norm = normalizePhone(phone);
+            if (!norm) return;
+            const deleted = getDeletedParticipants();
+            if (!deleted.includes(norm)) {
+                deleted.push(norm);
+                appState.deletedParticipants = deleted;
+                localStorage.setItem('dailyquiz_deleted_participants_v3', JSON.stringify(deleted));
+            }
+        }
 
         function normalizePhone(phone) {
             if (!phone) return '';
@@ -1416,22 +1641,104 @@
         // ==========================================
         // INITIALIZATION & URL QUERY PARSER
         // ==========================================
+        // ==========================================
+        // AUTO LOGOUT FOR DELETED PARTICIPANTS
+        // ==========================================
+        let autoLogoutTimer = null;
+        let _autoLogoutInProgress = false;
+
+        function triggerAutoLogoutCountdown(reason = 'Your user account was removed by the Admin.') {
+            if (_autoLogoutInProgress) return;
+            _autoLogoutInProgress = true;
+
+            let modal = document.getElementById('autoLogoutNotificationModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'autoLogoutNotificationModal';
+                modal.className = "fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4";
+                modal.innerHTML = `
+                    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border-2 border-rose-500 animate-bounce-once">
+                        <div class="w-14 h-14 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-2xl shadow-inner">
+                            <i class="fa-solid fa-user-slash"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Account Removed</h3>
+                            <p class="text-xs text-slate-600 mt-1" id="autoLogoutReasonText">${reason}</p>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4">
+                            <div class="text-xs font-semibold text-rose-700">Logging out automatically in</div>
+                            <div class="text-4xl font-black text-rose-600 font-mono my-1" id="autoLogoutCountdownSecs">3</div>
+                            <div class="text-[10px] text-rose-500 font-medium">seconds...</div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                const rText = document.getElementById('autoLogoutReasonText');
+                if (rText) rText.innerText = reason;
+                modal.classList.remove('hidden');
+            }
+
+            let secondsLeft = 3;
+            const countdownEl = document.getElementById('autoLogoutCountdownSecs');
+
+            if (autoLogoutTimer) clearInterval(autoLogoutTimer);
+            autoLogoutTimer = setInterval(() => {
+                secondsLeft -= 1;
+                if (countdownEl) countdownEl.innerText = secondsLeft;
+
+                if (secondsLeft <= 0) {
+                    clearInterval(autoLogoutTimer);
+                    autoLogoutTimer = null;
+                    _autoLogoutInProgress = false;
+                    if (modal) modal.remove();
+                    logoutStudent();
+                    showToast('You have been logged out because your account was deleted.', 'error');
+                }
+            }, 1000);
+        }
+
         function checkLoginSection() {
             const loginForm = document.getElementById('loginFormSection');
             const welcomeBack = document.getElementById('welcomeBackSection');
-            if(appState.currentStudent) {
-                if(loginForm) loginForm.classList.add('hidden');
-                if(welcomeBack) {
+            if (appState.currentStudent) {
+                const normCurrentPhone = normalizePhone(appState.currentStudent.phone);
+                const deleted = getDeletedParticipants();
+
+                if (deleted.includes(normCurrentPhone) || (appState.participants && appState.participants.length > 0 && !appState.participants.some(p => normalizePhone(p.phone) === normCurrentPhone))) {
+                    triggerAutoLogoutCountdown('Your user account was removed by the Admin.');
+                    return;
+                }
+
+                if (loginForm) loginForm.classList.add('hidden');
+                if (welcomeBack) {
                     welcomeBack.classList.remove('hidden');
-                    document.getElementById('welcomeBackName').innerText = appState.currentStudent.name;
+                    const nameEl = document.getElementById('welcomeBackName');
+                    if (nameEl) nameEl.innerText = appState.currentStudent.name;
                 }
             } else {
-                if(loginForm) loginForm.classList.remove('hidden');
-                if(welcomeBack) welcomeBack.classList.add('hidden');
+                if (loginForm) loginForm.classList.remove('hidden');
+                if (welcomeBack) welcomeBack.classList.add('hidden');
             }
         }
 
+        setInterval(checkLoginSection, 2000);
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'dailyquiz_deleted_participants_v3' || e.key === 'currentUser') {
+                getDeletedParticipants();
+                checkLoginSection();
+            }
+        });
+
         window.onload = async function () {
+            // Restore Admin session across page refreshes until manual logout
+            const adminAuthSaved = localStorage.getItem('dailyquiz_admin_auth');
+            if (adminAuthSaved === 'true') {
+                appState.adminAuthenticated = true;
+                const navText = document.getElementById('navAdminBtnText');
+                if (navText) navText.innerText = 'Admin Active';
+            }
+
             const savedUser = localStorage.getItem('currentUser');
             if(savedUser) {
                 try {
@@ -1615,11 +1922,14 @@
 
                     // --- Participants ---
                     const pData = await fetchAllRows('participants', 500);
+                    const deletedList = getDeletedParticipants();
                     appState.participants = pData.map(p => ({
                         name: sanitizeDisplayName(p.name),
                         phone: normalizePhone(p.phone),
                         created_at: p.created_at || new Date().toISOString()
-                    })).filter(p => p.phone);
+                    })).filter(p => p.phone && !deletedList.includes(p.phone));
+
+                    appState.submissions = (appState.submissions || []).filter(s => !deletedList.includes(normalizePhone(s.participantPhone)));
                     deduplicateParticipants();
 
                     // --- App Settings ---
@@ -1677,22 +1987,24 @@
                     }));
                 } catch(e) {}
             }
+            const deletedList = getDeletedParticipants();
+            appState.participants = (appState.participants || []).filter(p => !deletedList.includes(normalizePhone(p.phone)));
+            appState.submissions = (appState.submissions || []).filter(s => !deletedList.includes(normalizePhone(s.participantPhone)));
             deduplicateParticipants();
             updateDynamicUI();
         }
 
-        // Persists quizzes, submissions, settings, and participants to both localStorage
-        // and the live Supabase database (when connected).
-        // NOTE: Quizzes + submissions are upserted to Supabase directly via this function.
-        //       Participant records and app_settings are managed separately by their own
-        //       dedicated handlers (registerUser, saveAdminSettings, deleteParticipant).
         async function saveData() {
+            const deletedList = getDeletedParticipants();
+            appState.participants = (appState.participants || []).filter(p => !deletedList.includes(normalizePhone(p.phone)));
+            appState.submissions = (appState.submissions || []).filter(s => !deletedList.includes(normalizePhone(s.participantPhone)));
             deduplicateParticipants();
             const subsChanged = deduplicateSubmissions();
             localStorage.setItem(MOCK_STORAGE_KEY_QUIZZES, JSON.stringify(appState.quizzes));
             localStorage.setItem(MOCK_STORAGE_KEY_SUBMISSIONS, JSON.stringify(appState.submissions));
             localStorage.setItem('dailyquiz_settings_v2', JSON.stringify(appState.appSettings));
             localStorage.setItem('dailyquiz_participants_v2', JSON.stringify(appState.participants));
+            localStorage.setItem('dailyquiz_deleted_participants_v3', JSON.stringify(deletedList));
 
             if (appState.isLiveSupabase && appState.supabaseClient) {
                 // Run in background to prevent UI freezing
@@ -1778,20 +2090,37 @@
 
         
         async function deleteParticipant(phone) {
-            if (!confirm('Are you sure you want to delete this registered user account?')) return;
+            if (!confirm('Are you sure you want to delete this registered user account and ALL their records?')) return;
             const normPhone = normalizePhone(phone);
+            
+            // Delete from Supabase tables if live
             if (appState.isLiveSupabase && appState.supabaseClient) {
                 try {
-                    const { error } = await appState.supabaseClient.from('participants').delete().eq('phone', normPhone);
-                    if (error) { console.error(error); }
-                } catch (e) { console.error(e); }
+                    await appState.supabaseClient.from('participants').delete().eq('phone', normPhone);
+                } catch (e) { console.error('Supabase participant delete error', e); }
+                try {
+                    await appState.supabaseClient.from('submissions').delete().eq('participantPhone', normPhone);
+                } catch (e) { console.error('Supabase submissions delete error', e); }
             }
+
+            // Delete from local appState participants AND submissions everywhere!
             appState.participants = appState.participants.filter(p => normalizePhone(p.phone) !== normPhone);
+            appState.submissions = appState.submissions.filter(s => normalizePhone(s.participantPhone) !== normPhone);
+
             await saveData();
+
             renderRegisteredUsers();
             renderLeaderboard();
             renderAdminSubmissionsTable();
-            showToast('User account deleted successfully', 'success');
+            renderRecentManualEntriesTable();
+            populateManualParticipantsSelect('');
+
+            // If current logged-in user was deleted, trigger 3-second auto-logout
+            if (appState.currentStudent && normalizePhone(appState.currentStudent.phone) === normPhone) {
+                triggerAutoLogoutCountdown('Your user account was removed by the Admin.');
+            }
+
+            showToast('Participant account and all submissions deleted everywhere!', 'success');
         }
 
         function renderRegisteredUsers() {
@@ -1872,8 +2201,10 @@
             
             const todayStr = getTodayDateString();
             
-            // Sort quizzes by date descending
-            const sortedQuizzes = [...appState.quizzes].sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Sort quizzes by date descending, but prioritize Grand Quizzes (isGrandQuiz === true) at the top
+            const grandQuizzes = [...appState.quizzes].filter(q => q.isGrandQuiz).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const regularQuizzes = [...appState.quizzes].filter(q => !q.isGrandQuiz).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedQuizzes = [...grandQuizzes, ...regularQuizzes];
             
             sortedQuizzes.forEach(quiz => {
                 const card = document.createElement('div');
@@ -1881,7 +2212,70 @@
                 const isPast = quiz.date < todayStr;
                 const isFuture = quiz.date > todayStr;
                 
-                if (isToday) {
+                if (quiz.isGrandQuiz) {
+                    // Luxurious, ultra-notable Grand Quiz Banner at the top
+                    card.className = "bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-2xl border-2 border-amber-500/60 relative overflow-hidden transform hover:-translate-y-0.5 transition-all duration-300";
+                    
+                    const p1 = Number(quiz.cashAward1 || quiz.cashAward || 0);
+                    const p2 = Number(quiz.cashAward2 || 0);
+                    const p3 = Number(quiz.cashAward3 || 0);
+                    const hasPrizes = p1 > 0 || p2 > 0 || p3 > 0;
+                    
+                    let prizeBadgesHtml = '';
+                    if (hasPrizes) {
+                        prizeBadgesHtml = `
+                            <div class="flex flex-wrap items-center gap-2 mt-3">
+                                ${p1 > 0 ? `<span class="px-3 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 rounded-full font-black text-xs shadow-md border border-amber-300 flex items-center gap-1"><i class="fa-solid fa-trophy text-amber-900"></i> 1st: ₹${p1}</span>` : ''}
+                                ${p2 > 0 ? `<span class="px-3 py-1 bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-full font-black text-xs shadow-md border border-slate-100 flex items-center gap-1"><i class="fa-solid fa-medal text-slate-700"></i> 2nd: ₹${p2}</span>` : ''}
+                                ${p3 > 0 ? `<span class="px-3 py-1 bg-gradient-to-r from-amber-700 to-amber-800 text-amber-100 rounded-full font-black text-xs shadow-md border border-amber-600 flex items-center gap-1"><i class="fa-solid fa-award text-amber-300"></i> 3rd: ₹${p3}</span>` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    card.innerHTML = `
+                        <!-- Ambient Glow -->
+                        <div class="absolute -right-16 -bottom-16 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -left-16 -top-16 w-48 h-48 bg-yellow-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                            <div class="space-y-2">
+                                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-400/50 uppercase tracking-widest backdrop-blur-md shadow-inner">
+                                    <i class="fa-solid fa-crown text-amber-400 text-sm animate-bounce"></i>
+                                    <span>👑 THE QUIZ FINALE GRAND CHAMPIONSHIP</span>
+                                </div>
+                                <h2 class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 drop-shadow-md leading-tight">
+                                    ${quiz.title}
+                                </h2>
+                                <div class="text-xs text-amber-200/80 font-medium flex items-center gap-2">
+                                    <i class="fa-solid fa-calendar-star text-amber-400"></i>
+                                    <span>Event Date: <strong class="text-white font-bold">${quiz.date}</strong></span>
+                                    <span>•</span>
+                                    <span>Questions: <strong class="text-white font-bold">${(quiz.questions || []).length}</strong></span>
+                                </div>
+                                ${prizeBadgesHtml}
+                            </div>
+
+                            <div class="flex items-center gap-3 shrink-0 pt-2 lg:pt-0">
+                                ${isToday ? `
+                                    <button onclick="handleQuizSelection('${quiz.date}')" class="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-amber-950 rounded-2xl font-extrabold text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105 cursor-pointer">
+                                        <i class="fa-solid fa-play text-lg"></i>
+                                        <span>ENTER FINALE QUIZ NOW</span>
+                                    </button>
+                                ` : isFuture ? `
+                                    <button onclick="showComingSoonModal(appState.quizzes.find(q => q.id === '${quiz.id}'))" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-white rounded-2xl font-extrabold text-sm shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105 cursor-pointer border border-amber-300/30">
+                                        <i class="fa-solid fa-clock text-amber-200 animate-spin-slow"></i>
+                                        <span>VIEW COUNTDOWN & PRIZES</span>
+                                    </button>
+                                ` : `
+                                    <button onclick="readPastQuiz('${quiz.id}')" class="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-2xl font-extrabold text-sm shadow-lg transition-all border border-amber-500/40 flex items-center justify-center space-x-2 cursor-pointer">
+                                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                                        <span>VIEW FINALE ANSWERS</span>
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                } else if (isToday) {
                     card.className = "gradient-banner rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-500/30 relative overflow-hidden";
                     card.innerHTML = `
                         <div class="space-y-1 text-center sm:text-left z-10">
@@ -1909,15 +2303,18 @@
                         </button>
                     `;
                 } else if (isFuture) {
-                    card.className = "bg-slate-50 rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-70";
+                    card.className = "bg-gradient-to-r from-amber-50/70 to-yellow-50/70 rounded-2xl p-5 shadow-sm border border-amber-200/70 flex flex-col sm:flex-row items-center justify-between gap-4";
                     card.innerHTML = `
                         <div>
-                            <div class="text-xs font-bold text-brand-600 mb-1">Upcoming: ${quiz.date}</div>
-                            <h3 class="text-lg font-bold text-slate-600">${quiz.title}</h3>
+                            <div class="text-xs font-bold text-amber-700 mb-1 flex items-center gap-1">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                Coming Soon: ${quiz.date}
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">${quiz.title}</h3>
                         </div>
-                        <button disabled class="px-4 py-2 bg-slate-200 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed flex items-center space-x-1.5">
-                            <i class="fa-solid fa-lock"></i>
-                            <span>Locked</span>
+                        <button onclick="showComingSoonModal(appState.quizzes.find(q => q.id === '${quiz.id}'))" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold shadow transition-all flex items-center space-x-1.5 cursor-pointer">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            <span>View Countdown</span>
                         </button>
                     `;
                 }
@@ -2709,6 +3106,7 @@
                     showToast('First-time passcode set! Saved as Admin Passcode.', 'success');
                 }).catch(() => {});
                 appState.adminAuthenticated = true;
+                localStorage.setItem('dailyquiz_admin_auth', 'true');
                 document.getElementById('adminPasscodeInput').value = '';
                 closeAdminAuthModal();
                 document.getElementById('navAdminBtnText').innerText = 'Admin Active';
@@ -2726,6 +3124,7 @@
 
             if (isCorrect) {
                 appState.adminAuthenticated = true;
+                localStorage.setItem('dailyquiz_admin_auth', 'true');
                 document.getElementById('adminPasscodeInput').value = '';
                 closeAdminAuthModal();
                 document.getElementById('navAdminBtnText').innerText = 'Admin Active';
@@ -2750,6 +3149,7 @@
 
         function exitAdminView() {
             appState.adminAuthenticated = false;
+            localStorage.removeItem('dailyquiz_admin_auth');
             document.getElementById('navAdminBtnText').innerText = 'Admin Access';
             switchView('home');
             showToast('Exited Admin Control Panel', 'info');
@@ -2761,6 +3161,7 @@
             renderAdminSubmissionsTable();
             renderAdminGrandQuizzes();
             renderGrandLeaderboard();
+            renderRecentManualEntriesTable();
             populateManualParticipantsSelect();
             updateManualEntryValidation();
         }
@@ -2774,53 +3175,65 @@
             if (document.getElementById('adminTabSettings')) document.getElementById('adminTabSettings').classList.add('hidden');
             if (document.getElementById('adminTabUsers')) document.getElementById('adminTabUsers').classList.add('hidden');
 
-            ['tabBtnLeaderboard', 'tabBtnQuizzes', 'tabBtnGrandQuiz', 'tabBtnStudents', 'tabBtnManual', 'tabBtnSettings', 'tabBtnUsers'].forEach(btn => {
-                const el = document.getElementById(btn);
-                if (el) {
-                    if (btn === 'tabBtnGrandQuiz') {
-                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 hover:bg-amber-50 border border-amber-200 transition-all whitespace-nowrap flex-shrink-0";
-                    } else if (btn === 'tabBtnManual') {
-                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-200 transition-all whitespace-nowrap flex-shrink-0";
-                    } else {
-                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0";
-                    }
-                }
+            const inactiveStyles = {
+                tabBtnLeaderboard: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border-2 border-emerald-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnQuizzes: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-blue-50 text-blue-900 hover:bg-blue-100 border-2 border-blue-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnGrandQuiz: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-amber-50 text-amber-900 hover:bg-amber-100 border-2 border-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnStudents: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-purple-50 text-purple-900 hover:bg-purple-100 border-2 border-purple-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnManual: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border-2 border-indigo-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnSettings: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 border-2 border-slate-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnUsers: "px-3.5 py-2.5 text-xs font-bold rounded-xl bg-teal-50 text-teal-900 hover:bg-teal-100 border-2 border-teal-200 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
+            };
+
+            const activeStyles = {
+                tabBtnLeaderboard: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md border-2 border-emerald-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnQuizzes: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md border-2 border-blue-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnGrandQuiz: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white shadow-md border-2 border-amber-400 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnStudents: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-md border-2 border-purple-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnManual: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md border-2 border-indigo-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnSettings: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 text-white shadow-md border-2 border-slate-600 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5",
+                tabBtnUsers: "px-3.5 py-2.5 text-xs font-extrabold rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md border-2 border-teal-500 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1.5"
+            };
+
+            Object.keys(inactiveStyles).forEach(btnKey => {
+                const el = document.getElementById(btnKey);
+                if (el) el.className = inactiveStyles[btnKey];
             });
 
-            const activeClass = "px-3 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all whitespace-nowrap flex-shrink-0";
-            const activeGoldClass = "px-3 py-2 text-xs font-bold rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md transition-all whitespace-nowrap flex-shrink-0";
-            const activeIndigoClass = "px-3 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-md transition-all whitespace-nowrap flex-shrink-0";
-
+            let activeBtnKey = 'tabBtnLeaderboard';
             if (tab === 'leaderboard') {
                 if (document.getElementById('adminTabLeaderboard')) document.getElementById('adminTabLeaderboard').classList.remove('hidden');
-                if (document.getElementById('tabBtnLeaderboard')) document.getElementById('tabBtnLeaderboard').className = activeClass;
+                activeBtnKey = 'tabBtnLeaderboard';
             } else if (tab === 'quizzes') {
                 if (document.getElementById('adminTabQuizzes')) document.getElementById('adminTabQuizzes').classList.remove('hidden');
-                if (document.getElementById('tabBtnQuizzes')) document.getElementById('tabBtnQuizzes').className = activeClass;
+                activeBtnKey = 'tabBtnQuizzes';
             } else if (tab === 'grandquiz') {
                 if (document.getElementById('adminTabGrandQuiz')) document.getElementById('adminTabGrandQuiz').classList.remove('hidden');
-                if (document.getElementById('tabBtnGrandQuiz')) document.getElementById('tabBtnGrandQuiz').className = activeGoldClass;
+                activeBtnKey = 'tabBtnGrandQuiz';
                 renderAdminGrandQuizzes();
                 renderGrandLeaderboard();
             } else if (tab === 'students') {
                 if (document.getElementById('adminTabStudents')) document.getElementById('adminTabStudents').classList.remove('hidden');
-                if (document.getElementById('tabBtnStudents')) document.getElementById('tabBtnStudents').className = activeClass;
+                activeBtnKey = 'tabBtnStudents';
             } else if (tab === 'manual') {
                 if (document.getElementById('adminTabManual')) document.getElementById('adminTabManual').classList.remove('hidden');
-                if (document.getElementById('tabBtnManual')) document.getElementById('tabBtnManual').className = activeIndigoClass;
+                activeBtnKey = 'tabBtnManual';
                 populateManualParticipantsSelect();
                 updateManualEntryValidation();
             } else if (tab === 'settings') {
                 if (document.getElementById('adminTabSettings')) document.getElementById('adminTabSettings').classList.remove('hidden');
-                if (document.getElementById('tabBtnSettings')) document.getElementById('tabBtnSettings').className = activeClass;
+                activeBtnKey = 'tabBtnSettings';
                 document.getElementById('settingMadrasaName').value = appState.appSettings.madrasaName || appState.appSettings.madrasaname || '';
                 document.getElementById('settingSubtitle').value = appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || '';
                 document.getElementById('settingAdminPasscode').value = appState.appSettings.adminPasscode || appState.appSettings.adminpasscode || '';
             } else if (tab === 'users') {
                 if (document.getElementById('adminTabUsers')) document.getElementById('adminTabUsers').classList.remove('hidden');
-                if (document.getElementById('tabBtnUsers')) document.getElementById('tabBtnUsers').className = activeClass;
+                activeBtnKey = 'tabBtnUsers';
                 renderRegisteredUsers();
             }
+
+            const activeEl = document.getElementById(activeBtnKey);
+            if (activeEl) activeEl.className = activeStyles[activeBtnKey];
         }
 
         function renderLeaderboard() {
@@ -3015,15 +3428,17 @@
                             <i class="fa-solid fa-copy text-brand-600 text-xs flex-shrink-0 ml-1"></i>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="copyToClipboard('${safeUrl}')" class="flex-1 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-copy text-xs"></i>
-                                <span>Copy Share Link</span>
+                            <button onclick="copyToClipboard('${safeUrl}')" class="flex-1 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-share-nodes text-xs text-blue-200"></i>
+                                <span>Share Link</span>
                             </button>
-                            <button onclick="editQuiz('${q.id}')" class="p-2 text-brand-600 hover:bg-brand-50 rounded-lg text-xs border border-brand-200" title="Edit Quiz">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                            <button onclick="editQuiz('${q.id}')" class="px-3 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-1" title="Edit Quiz">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                <span>Edit</span>
                             </button>
-                            <button onclick="deleteQuiz('${q.id}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg text-xs border border-rose-200" title="Delete Quiz">
-                                <i class="fa-solid fa-trash"></i>
+                            <button onclick="deleteQuiz('${q.id}')" class="px-3 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-1" title="Delete Quiz">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                                <span>Delete</span>
                             </button>
                         </div>
                     </div>
@@ -3032,7 +3447,7 @@
             });
 
             if (sorted.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No daily quizzes yet. Click "New Daily Quiz" to add one.</div>`;
+                container.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No daily quizzes yet. Click "Add Daily Quiz" to add one.</div>`;
             }
         }
 
@@ -3077,12 +3492,14 @@
                     <td class="py-3 px-3 sm:px-4 font-extrabold text-emerald-700">${s.score || 0} / ${s.totalPossible || 0}</td>
                     <td class="py-3 px-3 sm:px-4 text-slate-500 hidden md:table-cell">${s.timeTakenSeconds || 0} secs</td>
                     <td class="py-3 px-3 sm:px-4 text-slate-400 text-[11px] hidden md:table-cell">${s.completedAt ? new Date(s.completedAt).toLocaleString() : 'N/A'}</td>
-                    <td class="py-3 px-3 sm:px-4 text-right space-x-1">
-                        <button onclick='showCertificate(${JSON.stringify(safeName)}, ${s.score || 0}, "${s.quizDate || ''}", ${s.totalPossible || 0})' class="text-emerald-600 hover:text-emerald-800 p-1 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors" title="View Certificate">
-                            <i class="fa-solid fa-certificate"></i>
+                    <td class="py-3 px-3 sm:px-4 text-right space-x-1.5">
+                        <button onclick='showCertificate(${JSON.stringify(safeName)}, ${s.score || 0}, "${s.quizDate || ''}", ${s.totalPossible || 0})' class="px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-extrabold rounded-lg shadow-sm transition-all inline-flex items-center gap-1" title="View Certificate">
+                            <i class="fa-solid fa-award text-amber-300"></i>
+                            <span>Certificate</span>
                         </button>
-                        <button onclick="deleteSubmission('${s.id}')" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 hover:bg-rose-100 rounded transition-colors" title="Delete Submission">
-                            <i class="fa-solid fa-trash"></i>
+                        <button onclick="deleteSubmission('${s.id}')" class="px-2.5 py-1.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-extrabold rounded-lg shadow-sm transition-all inline-flex items-center gap-1" title="Delete Submission">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                            <span>Delete</span>
                         </button>
                     </td>
                 `;
@@ -3112,8 +3529,10 @@
             document.getElementById('quizFormModal').classList.add('hidden');
         }
 
-        function addQuestionField() {
-            const container = document.getElementById('formQuestionsContainer');
+        function addQuestionField(targetContainerId = 'formQuestionsContainer') {
+            const containerId = (typeof targetContainerId === 'string' && targetContainerId) ? targetContainerId : 'formQuestionsContainer';
+            const container = document.getElementById(containerId);
+            if (!container) return;
             const qCount = container.children.length + 1;
 
             const div = document.createElement('div');
@@ -3227,6 +3646,7 @@
                 showToast('Daily quiz saved successfully!', 'success');
                 renderAdminView();
                 updateFeaturedQuizBanner();
+                showComingSoonModal(newQuiz);
             } catch (err) {
                 console.error(err);
                 showToast('Error saving quiz. Please try again.', 'error');
@@ -3280,18 +3700,144 @@
         // GRAND QUIZ MANAGEMENT FUNCTIONS
         // ==========================================
         function openGrandQuizModal() {
-            document.getElementById('grandQuizTitle').value = '';
-            document.getElementById('grandQuizDate').value = getTodayDateString();
-            document.getElementById('grandQuizCashAward').value = '500';
-            document.getElementById('grandQuizInitialQuestions').value = '10';
-            document.getElementById('grandQuizQuestionsContainer').innerHTML = '';
-            document.getElementById('grandQuizModalTitle').innerText = 'Create Grand Quiz';
-            autoAddGrandQuestions(10);
-            document.getElementById('grandQuizModal').classList.remove('hidden');
+            if (document.getElementById('grandQuizTitle')) document.getElementById('grandQuizTitle').value = '';
+            if (document.getElementById('grandQuizDate')) document.getElementById('grandQuizDate').value = getTodayDateString();
+            if (document.getElementById('grandQuizPrize1')) document.getElementById('grandQuizPrize1').value = '500';
+            if (document.getElementById('grandQuizPrize2')) document.getElementById('grandQuizPrize2').value = '300';
+            if (document.getElementById('grandQuizPrize3')) document.getElementById('grandQuizPrize3').value = '200';
+            if (document.getElementById('grandQuizInitialQuestions')) document.getElementById('grandQuizInitialQuestions').value = '5';
+            if (document.getElementById('grandQuizQuestionsContainer')) document.getElementById('grandQuizQuestionsContainer').innerHTML = '';
+            if (document.getElementById('grandQuizModalTitle')) document.getElementById('grandQuizModalTitle').innerText = 'Create Grand Quiz';
+            autoAddGrandQuestions(5);
+            const modal = document.getElementById('grandQuizModal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeGrandQuizModal() {
-            document.getElementById('grandQuizModal').classList.add('hidden');
+            const modal = document.getElementById('grandQuizModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // ==========================================
+        // COMING SOON COUNTDOWN POPUP FUNCTIONS
+        // ==========================================
+        let comingSoonInterval = null;
+        let currentComingSoonQuiz = null;
+
+        function showComingSoonModal(quiz) {
+            if (!quiz) return;
+            currentComingSoonQuiz = quiz;
+
+            const titleEl = document.getElementById('csModalTitle');
+            const subEl = document.getElementById('csModalSubtitle');
+            const badgeEl = document.getElementById('csModalBadge');
+
+            if (titleEl) titleEl.innerText = quiz.title || 'Upcoming Quiz';
+            if (subEl) subEl.innerText = `Scheduled Quiz Date: ${quiz.date || 'TBA'}`;
+            if (badgeEl) badgeEl.innerText = quiz.isGrandQuiz ? '👑 Grand Quiz: Coming Soon' : '⏰ Daily Quiz: Coming Soon';
+
+            updateComingSoonTimer();
+            if (comingSoonInterval) clearInterval(comingSoonInterval);
+            comingSoonInterval = setInterval(updateComingSoonTimer, 1000);
+
+            // Prize Podium Setup with Staggered Entrance Animations
+            const prizesContainer = document.getElementById('csPrizesContainer');
+            const p1Card = document.getElementById('prizeCard1');
+            const p2Card = document.getElementById('prizeCard2');
+            const p3Card = document.getElementById('prizeCard3');
+
+            // Reset animation initial states
+            const hideCardClass = "p-2.5 rounded-xl text-center shadow-md border transform transition-all duration-500 opacity-0 scale-90 translate-y-4";
+            if (p1Card) p1Card.className = `bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-950 border-amber-300 ${hideCardClass}`;
+            if (p2Card) p2Card.className = `bg-gradient-to-b from-slate-200 via-slate-100 to-slate-300 text-slate-800 border-slate-300 ${hideCardClass}`;
+            if (p3Card) p3Card.className = `bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-100 border-amber-600 ${hideCardClass}`;
+
+            const p1 = Number(quiz.cashAward1 !== undefined ? quiz.cashAward1 : (quiz.cashAward || 0));
+            const p2 = Number(quiz.cashAward2 || 0);
+            const p3 = Number(quiz.cashAward3 || 0);
+
+            if (quiz.isGrandQuiz && (p1 > 0 || p2 > 0 || p3 > 0)) {
+                if (prizesContainer) prizesContainer.classList.remove('hidden');
+                const v1 = document.getElementById('csPrize1Val');
+                const v2 = document.getElementById('csPrize2Val');
+                const v3 = document.getElementById('csPrize3Val');
+                if (v1) v1.innerText = `₹${p1}`;
+                if (v2) v2.innerText = `₹${p2}`;
+                if (v3) v3.innerText = `₹${p3}`;
+
+                if (p1Card) p1Card.classList.toggle('hidden', !(p1 > 0));
+                if (p2Card) p2Card.classList.toggle('hidden', !(p2 > 0));
+                if (p3Card) p3Card.classList.toggle('hidden', !(p3 > 0));
+
+                // Staggered animated entrance one by one for visible prize cards
+                if (p1 > 0) {
+                    setTimeout(() => {
+                        if (p1Card) p1Card.classList.remove('opacity-0', 'scale-90', 'translate-y-4');
+                        if (p1Card) p1Card.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+                    }, 250);
+                }
+
+                if (p2 > 0) {
+                    setTimeout(() => {
+                        if (p2Card) p2Card.classList.remove('opacity-0', 'scale-90', 'translate-y-4');
+                        if (p2Card) p2Card.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+                    }, 650);
+                }
+
+                if (p3 > 0) {
+                    setTimeout(() => {
+                        if (p3Card) p3Card.classList.remove('opacity-0', 'scale-90', 'translate-y-4');
+                        if (p3Card) p3Card.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+                    }, 1050);
+                }
+            } else {
+                if (prizesContainer) prizesContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('comingSoonModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeComingSoonModal() {
+            if (comingSoonInterval) {
+                clearInterval(comingSoonInterval);
+                comingSoonInterval = null;
+            }
+            const modal = document.getElementById('comingSoonModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function updateComingSoonTimer() {
+            if (!currentComingSoonQuiz || !currentComingSoonQuiz.date) return;
+
+            const targetDate = new Date(currentComingSoonQuiz.date + 'T00:00:00');
+            const now = new Date();
+            let diffMs = targetDate - now;
+
+            if (diffMs <= 0) {
+                diffMs = 0;
+            }
+
+            const seconds = Math.floor((diffMs / 1000) % 60);
+            const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+            const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            const dEl = document.getElementById('csDays');
+            const hEl = document.getElementById('csHours');
+            const mEl = document.getElementById('csMins');
+            const sEl = document.getElementById('csSecs');
+
+            if (dEl) dEl.innerText = String(days).padStart(2, '0');
+            if (hEl) hEl.innerText = String(hours).padStart(2, '0');
+            if (mEl) mEl.innerText = String(minutes).padStart(2, '0');
+            if (sEl) sEl.innerText = String(seconds).padStart(2, '0');
+        }
+
+        function copyComingSoonQuizLink() {
+            if (!currentComingSoonQuiz) return;
+            const safeUrl = `${window.location.origin}${window.location.pathname}?quizDate=${encodeURIComponent(currentComingSoonQuiz.date)}`;
+            copyToClipboard(safeUrl);
         }
 
         function autoAddGrandQuestions(count) {
@@ -3299,7 +3845,7 @@
             const container = document.getElementById('grandQuizQuestionsContainer');
             if (!container) return;
             container.innerHTML = '';
-            for (let i = 0; i < Math.min(num, 30); i++) {
+            for (let i = 0; i < Math.min(num, 50); i++) {
                 addQuestionField('grandQuizQuestionsContainer');
             }
         }
@@ -3310,7 +3856,9 @@
 
             const title = document.getElementById('grandQuizTitle').value.trim();
             const date = document.getElementById('grandQuizDate').value;
-            const cashAward = parseInt(document.getElementById('grandQuizCashAward').value, 10) || 0;
+            const cashAward1 = parseInt(document.getElementById('grandQuizPrize1')?.value || '0', 10);
+            const cashAward2 = parseInt(document.getElementById('grandQuizPrize2')?.value || '0', 10);
+            const cashAward3 = parseInt(document.getElementById('grandQuizPrize3')?.value || '0', 10);
             const blocks = document.querySelectorAll('#grandQuizQuestionsContainer .question-block');
 
             if (!title || !date) { showToast('Title and Date are required', 'error'); return; }
@@ -3348,7 +3896,10 @@
                 title: title,
                 date: date,
                 isGrandQuiz: true,
-                cashAward: cashAward,
+                cashAward: cashAward1,
+                cashAward1: cashAward1,
+                cashAward2: cashAward2,
+                cashAward3: cashAward3,
                 questions: questions
             };
 
@@ -3361,6 +3912,7 @@
             renderAdminView();
             updateFeaturedQuizBanner();
             showToast(`Grand Quiz "${title}" saved successfully!`, 'success');
+            showComingSoonModal(quizObj);
         }
 
         function renderAdminGrandQuizzes() {
@@ -3381,6 +3933,10 @@
             grands.forEach(q => {
                 const div = document.createElement('div');
                 div.className = "bg-gradient-to-br from-amber-50 to-yellow-50/50 border-2 border-amber-300 rounded-xl p-4 shadow-sm space-y-3 relative";
+                const p1 = q.cashAward1 !== undefined ? q.cashAward1 : (q.cashAward || 0);
+                const p2 = q.cashAward2 || 0;
+                const p3 = q.cashAward3 || 0;
+
                 div.innerHTML = `
                     <div class="flex items-start justify-between">
                         <div>
@@ -3390,8 +3946,8 @@
                             <h4 class="text-sm font-extrabold text-slate-900">${q.title}</h4>
                             <p class="text-xs text-slate-600 mt-0.5">${q.questions.length} Questions • ${q.questions.length * 2} Marks</p>
                         </div>
-                        ${q.cashAward ? `<div class="px-2.5 py-1 rounded-full bg-amber-400 text-amber-950 text-xs font-black shadow-sm flex items-center gap-1">
-                            <i class="fa-solid fa-trophy"></i> ₹${q.cashAward} Award
+                        ${(p1 > 0 || p2 > 0 || p3 > 0) ? `<div class="px-2.5 py-1 rounded-full bg-amber-400 text-amber-950 text-xs font-black shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-trophy"></i> 🥇₹${p1}${p2 > 0 ? ` 🥈₹${p2}` : ''}${p3 > 0 ? ` 🥉₹${p3}` : ''}
                         </div>` : ''}
                     </div>
                     <div class="flex items-center justify-end space-x-2 pt-2 border-t border-amber-200/80 text-xs">
@@ -3410,27 +3966,33 @@
         function editGrandQuiz(id) {
             const quiz = appState.quizzes.find(q => q.id === id);
             if (!quiz) return;
-            document.getElementById('grandQuizTitle').value = quiz.title;
-            document.getElementById('grandQuizDate').value = quiz.date;
-            document.getElementById('grandQuizCashAward').value = quiz.cashAward || 0;
-            document.getElementById('grandQuizInitialQuestions').value = quiz.questions.length;
+            if (document.getElementById('grandQuizTitle')) document.getElementById('grandQuizTitle').value = quiz.title;
+            if (document.getElementById('grandQuizDate')) document.getElementById('grandQuizDate').value = quiz.date;
+            if (document.getElementById('grandQuizPrize1')) document.getElementById('grandQuizPrize1').value = quiz.cashAward1 !== undefined ? quiz.cashAward1 : (quiz.cashAward || 500);
+            if (document.getElementById('grandQuizPrize2')) document.getElementById('grandQuizPrize2').value = quiz.cashAward2 || 0;
+            if (document.getElementById('grandQuizPrize3')) document.getElementById('grandQuizPrize3').value = quiz.cashAward3 || 0;
+            if (document.getElementById('grandQuizInitialQuestions')) document.getElementById('grandQuizInitialQuestions').value = quiz.questions.length;
 
             const container = document.getElementById('grandQuizQuestionsContainer');
-            container.innerHTML = '';
-            quiz.questions.forEach((q, idx) => {
-                addQuestionField('grandQuizQuestionsContainer');
-                const block = container.children[idx];
-                if (block) {
-                    block.querySelector('.q-text').value = q.text;
-                    block.querySelector('.q-opt-0').value = q.options[0] || '';
-                    block.querySelector('.q-opt-1').value = q.options[1] || '';
-                    block.querySelector('.q-opt-2').value = q.options[2] || '';
-                    block.querySelector('.q-opt-3').value = q.options[3] || '';
-                    block.querySelector('.q-correct').value = q.correctIndex;
-                }
-            });
-            document.getElementById('grandQuizModalTitle').innerText = 'Edit Grand Quiz';
-            document.getElementById('grandQuizModal').classList.remove('hidden');
+            if (container) {
+                container.innerHTML = '';
+                quiz.questions.forEach((q, idx) => {
+                    addQuestionField('grandQuizQuestionsContainer');
+                    const block = container.children[idx];
+                    if (block) {
+                        block.querySelector('.q-text').value = q.text;
+                        block.querySelector('.q-opt-0').value = q.options[0] || '';
+                        block.querySelector('.q-opt-1').value = q.options[1] || '';
+                        block.querySelector('.q-opt-2').value = q.options[2] || '';
+                        block.querySelector('.q-opt-3').value = q.options[3] || '';
+                        block.querySelector('.q-correct').value = q.correctIndex;
+                    }
+                });
+            }
+
+            if (document.getElementById('grandQuizModalTitle')) document.getElementById('grandQuizModalTitle').innerText = 'Edit Grand Quiz';
+            const modal = document.getElementById('grandQuizModal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function renderGrandLeaderboard() {
@@ -3528,27 +4090,137 @@
             contentEl.innerHTML = html;
         }
 
+        function showQuizFinaleModal(data) {
+            if (!data) return;
+            const titleEl = document.getElementById('finaleQuizTitle');
+            const nameEl = document.getElementById('finaleWinnerName');
+            const phoneEl = document.getElementById('finaleWinnerPhone');
+            const scoreEl = document.getElementById('finaleWinnerScore');
+            const prizeEl = document.getElementById('finaleWinnerPrize');
+
+            if (titleEl) titleEl.innerText = data.quizTitle || 'Grand Quiz Finale';
+            if (nameEl) nameEl.innerText = data.winnerName || 'Winner';
+            if (phoneEl) phoneEl.innerText = `Phone: ${data.winnerPhone || '-'}`;
+            if (scoreEl) scoreEl.innerText = `${data.score || 0} Marks`;
+            if (prizeEl) prizeEl.innerText = `₹${data.prize || 0} INR`;
+
+            const modal = document.getElementById('quizFinaleModal');
+            if (modal) modal.classList.remove('hidden');
+
+            if (typeof confetti === 'function') {
+                try {
+                    confetti({ particleCount: 150, spread: 90, origin: { y: 0.55 } });
+                } catch (e) {}
+            }
+        }
+
+        function closeQuizFinaleModal() {
+            const modal = document.getElementById('quizFinaleModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
         function declareGrandQuizWinner(quizId, phone, name, score, prize) {
+            const quiz = appState.quizzes.find(q => q.id === quizId);
+            const title = quiz ? quiz.title : 'Grand Quiz Finale';
+            showQuizFinaleModal({
+                quizTitle: title,
+                winnerName: name,
+                winnerPhone: phone,
+                score: score,
+                prize: prize
+            });
             showToast(`🏆 Congratulations! ₹${prize} Cash Award declared for ${name} (${phone})!`, 'success');
         }
 
         // ==========================================
         // MANUAL ENTRY FUNCTIONS
         // ==========================================
-        function populateManualParticipantsSelect() {
+        function deduplicateParticipants() {
+            const seen = {};
+            const merged = [];
+            const deleted = getDeletedParticipants();
+
+            // 1. Registered participants in state (excluding deleted ones)
+            (appState.participants || []).forEach(p => {
+                const norm = normalizePhone(p.phone);
+                if (!norm || deleted.includes(norm)) return;
+                if (!seen[norm]) {
+                    seen[norm] = true;
+                    merged.push({
+                        ...p,
+                        phone: norm,
+                        name: sanitizeDisplayName(p.name || 'Participant')
+                    });
+                }
+            });
+
+            // 2. Merge all participants who submitted daily quizzes (excluding deleted ones)
+            (appState.submissions || []).forEach(s => {
+                const norm = normalizePhone(s.participantPhone);
+                if (!norm || deleted.includes(norm)) return;
+                const name = sanitizeDisplayName(s.participantName);
+                if (!seen[norm]) {
+                    seen[norm] = true;
+                    merged.push({
+                        phone: norm,
+                        name: name || 'Participant',
+                        created_at: s.completedAt || new Date().toISOString()
+                    });
+                } else if (name && name !== 'Participant') {
+                    const existing = merged.find(m => m.phone === norm);
+                    if (existing && (!existing.name || existing.name === 'Participant')) {
+                        existing.name = name;
+                    }
+                }
+            });
+
+            appState.participants = merged;
+            return merged;
+        }
+
+        function populateManualParticipantsSelect(filterQuery = '') {
             const select = document.getElementById('manualEntryParticipantSelect');
+            const countBadge = document.getElementById('manualParticipantSearchCount');
+            const clearBtn = document.getElementById('btnClearManualSearch');
             if (!select) return;
+
             const currentVal = select.value;
-            select.innerHTML = `<option value="">-- Choose a registered participant --</option>`;
+            const q = (filterQuery || '').trim().toLowerCase();
+
+            if (clearBtn) {
+                if (q) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
 
             deduplicateParticipants();
-            const sorted = [...appState.participants].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            let sorted = [...(appState.participants || [])].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            if (q) {
+                sorted = sorted.filter(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const phone = (p.phone || '').toLowerCase();
+                    const norm = normalizePhone(p.phone).toLowerCase();
+                    return name.includes(q) || phone.includes(q) || norm.includes(q);
+                });
+            }
+
+            if (countBadge) {
+                countBadge.textContent = q ? `${sorted.length} matching profile(s)` : `${appState.participants.length} total registered`;
+            }
+
+            select.innerHTML = `<option value="">-- Choose Participant (${sorted.length} available) --</option>`;
+
             sorted.forEach(p => {
                 const norm = normalizePhone(p.phone);
                 if (!norm) return;
                 select.innerHTML += `<option value="${norm}">${sanitizeDisplayName(p.name)} (${norm})</option>`;
             });
-            select.value = currentVal;
+
+            if (currentVal && sorted.some(p => normalizePhone(p.phone) === currentVal)) {
+                select.value = currentVal;
+            } else if (q && sorted.length === 1) {
+                select.value = normalizePhone(sorted[0].phone);
+            }
 
             if (!select.dataset.listenerAttached) {
                 select.dataset.listenerAttached = 'true';
@@ -3557,6 +4229,79 @@
                 document.getElementById('manualEntryScore')?.addEventListener('input', updateManualEntryValidation);
                 document.getElementById('manualEntryTotalPossible')?.addEventListener('input', updateManualEntryValidation);
             }
+
+            renderManualParticipantsDirectory(filterQuery);
+        }
+
+        function renderManualParticipantsDirectory(filterQuery = '') {
+            const tbody = document.getElementById('manualParticipantsDirectoryBody');
+            const countEl = document.getElementById('manualDirectoryCount');
+            if (!tbody) return;
+
+            deduplicateParticipants();
+            let sorted = [...(appState.participants || [])].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            const q = (filterQuery || '').trim().toLowerCase();
+
+            if (q) {
+                sorted = sorted.filter(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const phone = (p.phone || '').toLowerCase();
+                    const norm = normalizePhone(p.phone).toLowerCase();
+                    return name.includes(q) || phone.includes(q) || norm.includes(q);
+                });
+            }
+
+            if (countEl) countEl.textContent = sorted.length;
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">No registered participants found matching "${filterQuery}"</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            sorted.forEach((p, idx) => {
+                const norm = normalizePhone(p.phone);
+                const name = sanitizeDisplayName(p.name);
+                const regDate = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
+                html += `
+                    <tr class="hover:bg-indigo-50/50 transition-colors">
+                        <td class="py-2.5 px-4 text-slate-400 font-mono text-[11px]">${idx + 1}</td>
+                        <td class="py-2.5 px-4 font-bold text-slate-900">${name}</td>
+                        <td class="py-2.5 px-4 font-mono text-slate-600">${norm}</td>
+                        <td class="py-2.5 px-4 text-slate-500 hidden sm:table-cell">${regDate}</td>
+                        <td class="py-2.5 px-4 text-right">
+                            <button onclick="selectParticipantForManualEntry('${norm}')"
+                                class="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 ml-auto">
+                                <i class="fa-solid fa-bolt text-amber-300"></i>
+                                <span>Select & Add Marks</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function selectParticipantForManualEntry(phone) {
+            const select = document.getElementById('manualEntryParticipantSelect');
+            if (select) {
+                select.value = phone;
+                updateManualEntryValidation();
+                showToast(`Selected participant: ${phone}`, 'info');
+                const formEl = document.getElementById('adminTabManual');
+                if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function filterManualParticipants(query) {
+            populateManualParticipantsSelect(query);
+            updateManualEntryValidation();
+        }
+
+        function clearManualSearch() {
+            const input = document.getElementById('manualEntrySearchInput');
+            if (input) input.value = '';
+            filterManualParticipants('');
         }
 
         function updateManualEntryValidation() {
@@ -3603,6 +4348,9 @@
         }
 
         function resetManualEntryForm() {
+            const searchInput = document.getElementById('manualEntrySearchInput');
+            if (searchInput) searchInput.value = '';
+            populateManualParticipantsSelect('');
             if (document.getElementById('manualEntryParticipantSelect')) document.getElementById('manualEntryParticipantSelect').value = '';
             if (document.getElementById('manualEntryQuizDate')) document.getElementById('manualEntryQuizDate').value = getTodayDateString();
             if (document.getElementById('manualEntryScore')) document.getElementById('manualEntryScore').value = '2';
@@ -3653,6 +4401,66 @@
             await saveData();
             renderAdminView();
             showToast(`Manual score (${score}/${total}) saved for ${name} on ${date}!`, 'success');
+        }
+
+        async function deleteManualEntry(id) {
+            if (!confirm('Are you sure you want to delete this manual entry record?')) return;
+            if (appState.isLiveSupabase && appState.supabaseClient) {
+                try {
+                    await appState.supabaseClient.from('submissions').delete().eq('id', id);
+                } catch (e) { console.error('Supabase delete submission error', e); }
+            }
+            appState.submissions = appState.submissions.filter(s => s.id !== id);
+            await saveData();
+            renderAdminView();
+            showToast('Manual entry record deleted successfully!', 'info');
+        }
+
+        function renderRecentManualEntriesTable() {
+            const tbody = document.getElementById('manualEntriesTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const entries = [...(appState.submissions || [])]
+                .sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
+
+            if (entries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 font-medium">No manual entries or submissions recorded yet.</td></tr>`;
+                return;
+            }
+
+            entries.slice(0, 30).forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+                const dateStr = s.completedAt ? new Date(s.completedAt).toLocaleString() : 'N/A';
+                const total = s.totalPossible || s.totalQuestions || 2;
+                const timeSecs = s.timeTakenSeconds || s.timeTaken || 0;
+                const notes = s.adminNotes || (s.isManualEntry ? 'Manual Entry' : 'Online Submission');
+
+                tr.innerHTML = `
+                    <td class="py-3 px-3 sm:px-4 font-bold text-slate-700">
+                        <div>${sanitizeDisplayName(s.participantName)}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${normalizePhone(s.participantPhone)}</div>
+                    </td>
+                    <td class="py-3 px-3 sm:px-4 font-semibold text-slate-600">${s.quizDate || ''}</td>
+                    <td class="py-3 px-3 sm:px-4 font-bold text-emerald-600">${s.score} / ${total}</td>
+                    <td class="py-3 px-3 sm:px-4 hidden sm:table-cell text-slate-500">${timeSecs}s</td>
+                    <td class="py-3 px-3 sm:px-4 hidden md:table-cell text-slate-500 text-[11px]">${dateStr}</td>
+                    <td class="py-3 px-3 sm:px-4 hidden lg:table-cell text-slate-500 italic text-[11px]">${notes}</td>
+                    <td class="py-3 px-3 sm:px-4 text-right">
+                        <button onclick="deleteManualEntry('${s.id}')" class="px-2.5 py-1 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1 ml-auto">
+                            <i class="fa-solid fa-trash"></i>
+                            <span>Delete</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function refreshManualEntriesTable() {
+            renderRecentManualEntriesTable();
+            showToast('Refreshed Recent Manual Entries list', 'info');
         }
 
         function exportParticipantsData() {
@@ -3865,18 +4673,86 @@
                     <div class="footer">
                         ${madrasaName} • ${eventSubtitle} • Official Report
                     </div>
-
-                    <' + 'script>
-                        setTimeout(function() { window.print(); }, 500);
-                    <' + '/script>
                 </body>
                 </html>
             `);
             win.document.close();
+            setTimeout(function() {
+                try { win.print(); } catch(e) {}
+            }, 600);
             return true;
         }
 
-        function generateSubmissionsPdf(rows, targetDate) {
+        async function generateDirectCanvasPdf(title, subtitle, targetDate, headers, rows, fileName) {
+            const madrasaName = _getMadrasaBrandName();
+            const eventSubtitle = _getEventSubtitle();
+
+            let container = document.getElementById('pdfExportRenderContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'pdfExportRenderContainer';
+                container.style.position = 'fixed';
+                container.style.left = '-9999px';
+                container.style.top = '0';
+                container.style.width = '800px';
+                container.style.background = '#ffffff';
+                container.style.padding = '30px';
+                container.style.color = '#0f172a';
+                container.style.fontFamily = "'Inter', 'Amiri', system-ui, sans-serif";
+                document.body.appendChild(container);
+            }
+
+            let headersHtml = headers.map(h => `<th style="padding:10px 12px; background:#064e3b; color:#ffffff; font-size:12px; font-weight:bold; text-align:left;">${h}</th>`).join('');
+            let rowsHtml = rows.map((r, i) => {
+                const bg = i % 2 === 1 ? 'background:#f8fafc;' : 'background:#ffffff;';
+                const cellsHtml = r.map((c, cIdx) => `<td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-size:12px; ${cIdx===1?'font-weight:bold; color:#0f172a;':''}">${c}</td>`).join('');
+                return `<tr style="${bg}">${cellsHtml}</tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="background:linear-gradient(135deg, #064e3b 0%, #059669 100%); color:#ffffff; padding:20px; border-radius:10px; margin-bottom:18px;">
+                    <h1 style="margin:0 0 4px 0; font-size:22px; font-weight:800;">${madrasaName}</h1>
+                    <p style="margin:0; font-size:12px; opacity:0.9;">${eventSubtitle} • ${title}</p>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:16px; font-size:12px; display:flex; justify-content:space-between;">
+                    <div><strong>Report Date:</strong> ${targetDate}</div>
+                    <div><strong>Total Records:</strong> ${rows.length}</div>
+                    <div><strong>Generated:</strong> ${new Date().toLocaleDateString()}</div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; margin-top:8px;">
+                    <thead><tr>${headersHtml}</tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                <div style="margin-top:24px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:12px;">
+                    ${madrasaName} • ${eventSubtitle} • Official Export
+                </div>
+            `;
+
+            try {
+                if (window.html2canvas && window.jspdf) {
+                    showToast('Generating exact script PDF file...', 'info');
+                    const canvas = await window.html2canvas(container, { scale: 2, useCORS: true, logging: false });
+                    const imgData = canvas.toDataURL('image/png');
+                    const jsPDF = window.jspdf.jsPDF || window.jsPDF;
+                    const pdf = new jsPDF('p', 'pt', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(fileName);
+                    showToast(`Downloaded PDF: ${fileName}`, 'success');
+                    container.innerHTML = '';
+                    return true;
+                }
+            } catch(err) {
+                console.warn('Canvas PDF export failed, fallback to print window:', err);
+            }
+
+            container.innerHTML = '';
+            return openPrintableReportWindow(title, subtitle, targetDate, headers, rows);
+        }
+
+        async function generateSubmissionsPdf(rows, targetDate) {
             const headers = ['#', 'Participant Name', 'Phone', 'Quiz Date', 'Score', 'Accuracy', 'Time', 'Submitted'];
             const dataRows = rows.map((s, i) => {
                 const score = Number(s.score || 0);
@@ -3897,16 +4773,17 @@
                 ];
             });
 
-            // Open exact Unicode native script PDF Report Window
-            const htmlOk = openPrintableReportWindow('Daily Quiz Submissions Report', 'Participant quiz results filtered by quiz date', targetDate, headers, dataRows);
-            if (htmlOk) return true;
-
-            const doc = _buildPdfDoc('Daily Quiz Submissions Report', 'Participant quiz results filtered by quiz date', targetDate, rows.length);
-            if (!doc) return false;
-            return _finalizePdf(doc, `seerah_quiz_submissions_${targetDate}.pdf`);
+            return await generateDirectCanvasPdf(
+                'Daily Quiz Submissions Report',
+                'Participant quiz results filtered by quiz date',
+                targetDate,
+                headers,
+                dataRows,
+                `seerah_quiz_submissions_${targetDate}.pdf`
+            );
         }
 
-        function generateParticipantsPdf(rows, targetDate) {
+        async function generateParticipantsPdf(rows, targetDate) {
             const headers = ['#', 'Participant Name', 'Phone Number', 'Registered At'];
             const dataRows = rows.map((p, i) => [
                 String(i + 1),
@@ -3915,13 +4792,14 @@
                 p.created_at ? new Date(p.created_at).toLocaleString() : '-'
             ]);
 
-            // Open exact Unicode native script PDF Report Window
-            const htmlOk = openPrintableReportWindow('Registered Participants Report', 'New participant registrations filtered by signup date', targetDate, headers, dataRows);
-            if (htmlOk) return true;
-
-            const doc = _buildPdfDoc('Registered Participants Report', 'New participant registrations filtered by signup date', targetDate, rows.length);
-            if (!doc) return false;
-            return _finalizePdf(doc, `madrasa_registered_users_${targetDate}.pdf`);
+            return await generateDirectCanvasPdf(
+                'Registered Participants Report',
+                'New participant registrations filtered by signup date',
+                targetDate,
+                headers,
+                dataRows,
+                `madrasa_registered_users_${targetDate}.pdf`
+            );
         }
 
         function openDateExportModal() {
