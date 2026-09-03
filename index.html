@@ -961,6 +961,61 @@
             return String(phone).replace(/\D/g, '').slice(-10);
         }
 
+        function sanitizeDisplayName(raw) {
+            if (raw === null || raw === undefined) return '';
+            let s = String(raw);
+            try { s = s.normalize('NFC'); } catch (e) {}
+            s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u0080-\u009F]/g, '');
+            s = s.replace(/[\u200B-\u200F\u202A-\u202E\u2060\u2061-\u206F\uFEFF\u00AD\u034F\u180E]/g, '');
+            s = s.replace(/\s+/g, ' ').trim();
+            if (s.length > 80) s = s.slice(0, 80);
+            return s;
+        }
+
+        function pdfSafeText(raw) {
+            if (raw === null || raw === undefined) return '';
+            let s = sanitizeDisplayName(raw);
+            if (!s) return '';
+            const translitMap = {
+                'À':'A','Á':'A','Â':'A','Ã':'A','Ä':'A','Å':'A','Æ':'AE',
+                'Ç':'C','Č':'C','Ć':'C','Ð':'D','Đ':'D',
+                'È':'E','É':'E','Ê':'E','Ë':'E','Ě':'E',
+                'Ì':'I','Í':'I','Î':'I','Ï':'I',
+                'Ñ':'N','Ň':'N','Ò':'O','Ó':'O','Ô':'O','Õ':'O','Ö':'O','Ø':'O','Œ':'OE',
+                'Ŕ':'R','Ř':'R','Š':'S','Ś':'S','Ş':'S',
+                'Þ':'TH','Ť':'T','Ù':'U','Ú':'U','Û':'U','Ü':'U','Ů':'U',
+                'Ý':'Y','Ÿ':'Y','Ž':'Z','Ź':'Z','Ż':'Z',
+                'à':'a','á':'a','â':'a','ã':'a','ä':'a','å':'a','æ':'ae',
+                'ç':'c','č':'c','ć':'c','ð':'d','đ':'d',
+                'è':'e','é':'e','ê':'e','ë':'e','ě':'e',
+                'ì':'i','í':'i','î':'i','ï':'i',
+                'ñ':'n','ň':'n','ò':'o','ó':'o','ô':'o','õ':'o','ö':'o','ø':'o','œ':'oe',
+                'ŕ':'r','ř':'r','š':'s','ś':'s','ş':'s','ß':'ss',
+                'þ':'th','ť':'t','ù':'u','ú':'u','û':'u','ü':'u','ů':'u',
+                'ý':'y','ÿ':'y','ž':'z','ź':'z','ż':'z',
+                '€':'E','£':'L','¥':'Y','¢':'c','©':'(c)','®':'(r)','™':'TM',
+                '“':'"','”':'"','‘':"'",'’':"'",'–':'-','—':'-','…':'...','·':'.','•':'*',
+                '†':'+','‡':'+','⁄':'/','‹':'<','›':'>','«':'<<','»':'>>','„':'",'
+            };
+            let out = '';
+            for (let i = 0; i < s.length; i++) {
+                const ch = s[i];
+                if (translitMap[ch]) { out += translitMap[ch]; continue; }
+                const code = ch.charCodeAt(0);
+                if (code >= 0x20 && code <= 0x7E) {
+                    out += ch;
+                } else if (code >= 0xA0 && code <= 0xFF) {
+                    out += ch;
+                }
+            }
+            out = out.replace(/\s+/g, ' ').trim();
+            if (!out) {
+                const stripped = sanitizeDisplayName(raw).replace(/\s+/g, ' ').trim();
+                out = stripped ? '[Unicode Name]' : '';
+            }
+            return out;
+        }
+
         function deduplicateParticipants() {
             const seen = {};
             const deduped = [];
@@ -1083,8 +1138,8 @@
         }
 
         async function saveAdminSettings() {
-            const madrasaName = document.getElementById('settingMadrasaName').value.trim();
-            const eventSubtitle = document.getElementById('settingSubtitle').value.trim();
+            const madrasaName = sanitizeDisplayName(document.getElementById('settingMadrasaName').value);
+            const eventSubtitle = sanitizeDisplayName(document.getElementById('settingSubtitle').value);
             const adminPasscodeInput = document.getElementById('settingAdminPasscode').value.trim();
 
             if (!madrasaName) {
@@ -1189,11 +1244,14 @@
                     appState.submissions = sData.map(item => {
                         try {
                             const d = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
-                            if (d && d.id) return d;
+                            if (d && d.id) {
+                                d.participantName = sanitizeDisplayName(d.participantName);
+                                return d;
+                            }
                             if (item.id && item.quizdate !== undefined) {
                                 return {
                                     id: item.id,
-                                    participantName: item.participantname || item.participantName,
+                                    participantName: sanitizeDisplayName(item.participantname || item.participantName),
                                     participantPhone: item.participantphone || item.participantPhone,
                                     quizId: item.quizid || item.quizId,
                                     quizDate: item.quizdate || item.quizDate,
@@ -1213,7 +1271,7 @@
                     // --- Participants ---
                     const pData = await fetchAllRows('participants', 500);
                     appState.participants = pData.map(p => ({
-                        name: p.name,
+                        name: sanitizeDisplayName(p.name),
                         phone: normalizePhone(p.phone),
                         created_at: p.created_at || new Date().toISOString()
                     })).filter(p => p.phone);
@@ -1247,7 +1305,15 @@
             appState.quizzes = rawQ ? (() => { try { return JSON.parse(rawQ); } catch(e) { return []; } })() : DEFAULT_QUIZZES;
 
             const rawS = localStorage.getItem(MOCK_STORAGE_KEY_SUBMISSIONS);
-            appState.submissions = rawS ? (() => { try { return JSON.parse(rawS); } catch(e) { return []; } })() : DEFAULT_SUBMISSIONS;
+            appState.submissions = rawS ? (() => {
+                try {
+                    const arr = JSON.parse(rawS);
+                    if (Array.isArray(arr)) {
+                        arr.forEach(s => { if (s && s.participantName) s.participantName = sanitizeDisplayName(s.participantName); });
+                    }
+                    return arr;
+                } catch(e) { return []; }
+            })() : DEFAULT_SUBMISSIONS;
 
             const rawSetts = localStorage.getItem('dailyquiz_settings_v2');
             if (rawSetts) {
@@ -1259,7 +1325,11 @@
             const rawParts = localStorage.getItem('dailyquiz_participants_v2');
             if (rawParts) {
                 try {
-                    appState.participants = JSON.parse(rawParts).map(p => ({ ...p, phone: normalizePhone(p.phone) }));
+                    appState.participants = JSON.parse(rawParts).map(p => ({
+                        ...p,
+                        name: sanitizeDisplayName(p.name),
+                        phone: normalizePhone(p.phone)
+                    }));
                 } catch(e) {}
             }
             deduplicateParticipants();
@@ -1326,10 +1396,10 @@
                 showToast('Please provide a valid phone number', 'error');
                 return false;
             }
-            if (!name) name = 'Participant';
+            const cleanName = sanitizeDisplayName(name) || 'Participant';
 
-            appState.currentStudent = { name, phone: normPhone };
-            localStorage.setItem('currentUser', JSON.stringify({ name, phone: normPhone }));
+            appState.currentStudent = { name: cleanName, phone: normPhone };
+            localStorage.setItem('currentUser', JSON.stringify({ name: cleanName, phone: normPhone }));
             updateHeaderUserInfo();
 
             deduplicateParticipants();
@@ -1337,12 +1407,12 @@
             if (existingIdx >= 0) {
                 appState.participants[existingIdx] = {
                     ...appState.participants[existingIdx],
-                    name,
+                    name: cleanName,
                     phone: normPhone
                 };
             } else {
                 appState.participants.push({
-                    name,
+                    name: cleanName,
                     phone: normPhone,
                     created_at: new Date().toISOString()
                 });
@@ -1352,7 +1422,7 @@
             
             if (appState.isLiveSupabase && appState.supabaseClient) {
                 try {
-                    const userObj = { phone: normPhone, name };
+                    const userObj = { phone: normPhone, name: cleanName };
                     await appState.supabaseClient.from('participants').upsert(userObj, { onConflict: 'phone' });
                 } catch (e) {
                     console.warn('Supabase participant upsert failed, kept locally:', e);
@@ -1582,7 +1652,7 @@
 
         async function handleParticipantLogin(e) {
             if (e && e.preventDefault) e.preventDefault();
-            const name = document.getElementById('inputStudentName').value.trim();
+            const name = sanitizeDisplayName(document.getElementById('inputStudentName').value);
             const phone = document.getElementById('inputStudentPhone').value.trim();
             const dateSelected = document.getElementById('inputQuizDate').value;
 
@@ -1590,6 +1660,7 @@
                 showToast('Please provide your name and phone number', 'error');
                 return;
             }
+            document.getElementById('inputStudentName').value = name;
 
             const normPhone = normalizePhone(phone);
             if (normPhone.length < 10) {
@@ -1627,7 +1698,7 @@
                 return;
             }
 
-            const name = document.getElementById('inputStudentName').value.trim();
+            const name = sanitizeDisplayName(document.getElementById('inputStudentName').value);
             const phone = document.getElementById('inputStudentPhone').value.trim();
 
             if (!phone) {
@@ -2206,9 +2277,10 @@
 
             appState._quizSaveLock = true;
             try {
+                const cleanName = sanitizeDisplayName(appState.currentStudent.name) || 'Participant';
                 const submission = {
                     id: 'sub-' + Date.now() + '-' + Math.floor(Math.random() * 1000000),
-                    participantName: appState.currentStudent.name,
+                    participantName: cleanName,
                     participantPhone: normPhone,
                     quizId: quiz.id,
                     quizDate: quizDate,
@@ -2233,7 +2305,7 @@
                     await saveData();
                 }
 
-                document.getElementById('resultParticipantName').innerText = appState.currentStudent.name;
+                document.getElementById('resultParticipantName').innerText = cleanName;
                 document.getElementById('resultScore').innerText = score;
                 document.getElementById('resultTotalPossible').innerText = totalPossible;
 
@@ -2850,21 +2922,13 @@
 
             let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec)\n';
             exportable.forEach(s => {
-                const name = String(s.participantName || '').replace(/"/g, '""');
+                const name = sanitizeDisplayName(s.participantName || '').replace(/"/g, '""');
                 const phone = String(s.participantPhone || '').replace(/"/g, '""');
                 const date = String(s.quizDate || '').replace(/"/g, '""');
                 csv += `"${name}","${phone}","${date}",${s.score || 0},${s.totalPossible || 0},${s.timeTakenSeconds || 0}\n`;
             });
 
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `parammal_madrasa_seerah_quiz_data_${getTodayDateString()}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            try { document.body.removeChild(a); } catch(e) {}
-            setTimeout(() => { try { window.URL.revokeObjectURL(url); } catch(e) {} }, 1000);
+            triggerCsvDownload(csv, `parammal_madrasa_seerah_quiz_data_${getTodayDateString()}.csv`);
             showToast('Exported CSV dataset', 'success');
         }
 
@@ -2897,8 +2961,10 @@
             const jsPDF = _ensurePdfLibs();
             if (!jsPDF) return null;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-            const madrasa = _getMadrasaBrandName();
-            const eventName = _getEventSubtitle();
+            const madrasa = pdfSafeText(_getMadrasaBrandName());
+            const eventName = pdfSafeText(_getEventSubtitle());
+            const safeTitle = pdfSafeText(title);
+            const safeSubtitle = pdfSafeText(subtitle);
             const pageWidth = doc.internal.pageSize.getWidth();
 
             doc.setFillColor(6, 78, 59);
@@ -2917,11 +2983,11 @@
             doc.setTextColor(15, 23, 42);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text(title, 40, 130);
+            doc.text(safeTitle, 40, 130);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(71, 85, 105);
-            doc.text(subtitle, 40, 148);
+            doc.text(safeSubtitle, 40, 148);
 
             const metaY = 176;
             doc.setFillColor(248, 250, 252);
@@ -2948,12 +3014,13 @@
                 const totalPages = doc.internal.getNumberOfPages();
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
+                const footerText = pdfSafeText(_getMadrasaBrandName() + '  |  ' + _getEventSubtitle());
                 for (let i = 1; i <= totalPages; i++) {
                     doc.setPage(i);
                     doc.setFontSize(8);
                     doc.setTextColor(148, 163, 184);
                     doc.setFont('helvetica', 'normal');
-                    doc.text(_getMadrasaBrandName() + '  |  ' + _getEventSubtitle(), 40, pageHeight - 28);
+                    doc.text(footerText, 40, pageHeight - 28);
                     doc.text('Page ' + i + ' of ' + totalPages, pageWidth - 40, pageHeight - 28, { align: 'right' });
                 }
                 doc.save(fileName);
@@ -3023,7 +3090,7 @@
                 const timeTaken = mins ? `${mins}m ${String(secs).padStart(2, '0')}s` : `${s.timeTakenSeconds || 0}s`;
                 return [
                     String(i + 1),
-                    String(s.participantName || ''),
+                    pdfSafeText(s.participantName || ''),
                     String(s.participantPhone || ''),
                     s.quizDate || '',
                     `${score} / ${total}`,
@@ -3106,7 +3173,7 @@
 
             const bodyData = rows.map((p, i) => [
                 String(i + 1),
-                String(p.name || ''),
+                pdfSafeText(p.name || ''),
                 String(p.phone || ''),
                 p.created_at ? new Date(p.created_at).toLocaleString() : '-'
             ]);
@@ -3245,7 +3312,8 @@
         }
 
         function triggerCsvDownload(csvContent, fileName) {
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const withBom = '\uFEFF' + csvContent;
+            const blob = new Blob([withBom], { type: 'text/csv;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -3288,7 +3356,7 @@
                 } else {
                     let csv = 'Participant Name,Phone,Quiz Date,Score,Total Possible,Time Taken (sec),Completed At,Accuracy\n';
                     exportable.forEach(s => {
-                        const name = String(s.participantName || '').replace(/"/g, '""');
+                        const name = sanitizeDisplayName(s.participantName || '').replace(/"/g, '""');
                         const phone = String(s.participantPhone || '').replace(/"/g, '""');
                         const date = String(s.quizDate || '').replace(/"/g, '""');
                         const completedAt = String(s.completedAt || '').replace(/"/g, '""');
@@ -3316,7 +3384,7 @@
                 } else {
                     let csv = 'Participant Name,Phone,Registered At\n';
                     exportable.forEach(p => {
-                        const name = String(p.name || '').replace(/"/g, '""');
+                        const name = sanitizeDisplayName(p.name || '').replace(/"/g, '""');
                         const phone = String(p.phone || '').replace(/"/g, '""');
                         const registered = String(p.created_at || '').replace(/"/g, '""');
                         csv += `"${name}","${phone}","${registered}"\n`;
