@@ -489,15 +489,30 @@
                 </div>
             </div>
 
+            <!-- Participation Progress Bar -->
+            <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-100">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-chart-line text-brand-600 mr-2"></i> Quiz Participation Progress
+                    </h3>
+                    <span class="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-200 px-2.5 py-1 rounded-full" id="participationSummaryPill">0 / 0 Quizzes</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                    <div id="participationProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-brand-600 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1.5" id="participationProgressLabel">No quizzes attempted yet.</p>
+            </div>
+
             <!-- Quiz Submissions Grid & Detailed Review -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left: List of Quizzes Attempted -->
-                <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-md border border-slate-100 space-y-4">
-                    <h3 class="text-sm font-bold text-slate-900 flex items-center">
-                        <i class="fa-solid fa-history text-brand-600 mr-2"></i> Attempted Seerah Quizzes
+                <!-- Left: Full quiz list (attempted + not-attempted) -->
+                <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-md border border-slate-100 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center justify-between">
+                        <span class="flex items-center"><i class="fa-solid fa-list-check text-brand-600 mr-2"></i> All Seerah Quizzes</span>
+                        <span class="text-[10px] text-slate-400 font-normal" id="quizListCountLabel"></span>
                     </h3>
-                    <div id="studentQuizHistoryList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                        <!-- Dynamic items -->
+                    <div id="studentQuizHistoryList" class="space-y-2 overflow-y-auto pr-1" style="max-height:620px">
+                        <!-- Dynamic items injected by renderStudentDashboard() -->
                     </div>
                 </div>
 
@@ -505,8 +520,7 @@
                 <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-md border border-slate-100 space-y-5">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
-                            <h3 class="text-base font-bold text-slate-900" id="reviewQuizTitle">Select a quiz to review
-                            </h3>
+                            <h3 class="text-base font-bold text-slate-900" id="reviewQuizTitle">Select a quiz to review</h3>
                             <p class="text-xs text-slate-500" id="reviewQuizMeta">Question by question analysis</p>
                         </div>
                         <span id="reviewQuizScoreBadge"
@@ -515,11 +529,10 @@
                         </span>
                     </div>
 
-                    <div id="reviewQuestionsContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    <div id="reviewQuestionsContainer" class="space-y-4 overflow-y-auto pr-2" style="max-height:600px">
                         <div class="text-center py-12 text-slate-400 text-xs">
                             <i class="fa-solid fa-book-open-reader text-3xl mb-2 text-slate-300"></i>
-                            <p>Select any attempted quiz from the left list to review detailed marks and correct
-                                options.</p>
+                            <p>Select any quiz from the left list to review your answers and marks.</p>
                         </div>
                     </div>
                 </div>
@@ -1676,107 +1689,180 @@
             document.getElementById('dashStudentPhone').innerText = phone;
             document.getElementById('studentAvatarLetter').innerText = (appState.currentStudent.name || 'P').charAt(0).toUpperCase();
 
-            // Dedup submissions: only keep first per (phone, quizDate) to avoid inflated counts
-            const seenQuizDate = {};
-            const relevantSubs = appState.submissions
+            // --- Build a deduped map of this participant's submissions keyed by quizDate ---
+            // If someone somehow submitted twice for the same date, keep only the earliest.
+            const subByDate = {};
+            appState.submissions
                 .filter(s => normalizePhone(s.participantPhone) === phone)
                 .sort((a, b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0))
-                .filter(s => {
-                    const k = s.quizDate;
-                    if (seenQuizDate[k]) return false;
-                    seenQuizDate[k] = true;
-                    return true;
+                .forEach(s => {
+                    if (!subByDate[s.quizDate]) subByDate[s.quizDate] = s;
                 });
 
-            const totalScore = relevantSubs.reduce((acc, curr) => acc + (curr.score || 0), 0);
-            const totalPossible = relevantSubs.reduce((acc, curr) => acc + (curr.totalPossible || 0), 0);
-            const accuracy = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+            // All deduped submissions for this participant
+            const relevantSubs = Object.values(subByDate);
 
-            document.getElementById('dashTotalScore').innerText = totalScore;
-            document.getElementById('dashAccuracy').innerText = `${accuracy}%`;
+            const totalScore    = relevantSubs.reduce((a, c) => a + (c.score || 0), 0);
+            const totalPossible = relevantSubs.reduce((a, c) => a + (c.totalPossible || 0), 0);
+            const accuracy      = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+
+            document.getElementById('dashTotalScore').innerText    = totalScore;
+            document.getElementById('dashAccuracy').innerText      = `${accuracy}%`;
             document.getElementById('dashAttemptsCount').innerText = `${relevantSubs.length} Quizzes Attempted`;
 
-            // Build leaderboard using deduped submissions
-            let participantScores = {};
-            let participantPossible = {};
-            let participantAttempts = {};
+            // --- Leaderboard rank ---
             const byPhoneDate = {};
+            const pScores = {}, pPossible = {};
             appState.submissions
                 .slice()
                 .sort((a, b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0))
                 .forEach(sub => {
-                    const p = normalizePhone(sub.participantPhone);
+                    const p  = normalizePhone(sub.participantPhone);
                     const dk = `${p}__${sub.quizDate}`;
                     if (byPhoneDate[dk]) return;
                     byPhoneDate[dk] = true;
-                    participantScores[p] = (participantScores[p] || 0) + (sub.score || 0);
-                    participantPossible[p] = (participantPossible[p] || 0) + (sub.totalPossible || 0);
-                    participantAttempts[p] = (participantAttempts[p] || 0) + 1;
-                    if (!byPhoneDate[`__name__${p}`]) {
-                        byPhoneDate[`__name__${p}`] = sub.participantName;
-                    }
+                    pScores[p]   = (pScores[p]   || 0) + (sub.score        || 0);
+                    pPossible[p] = (pPossible[p] || 0) + (sub.totalPossible || 0);
                 });
-            let sortedParticipants = Object.keys(participantScores).sort((a, b) => {
-                const scoreDiff = (participantScores[b] || 0) - (participantScores[a] || 0);
-                if (scoreDiff !== 0) return scoreDiff;
-                const accA = participantPossible[a] > 0 ? (participantScores[a] || 0) / participantPossible[a] : 0;
-                const accB = participantPossible[b] > 0 ? (participantScores[b] || 0) / participantPossible[b] : 0;
+            const sortedPs = Object.keys(pScores).sort((a, b) => {
+                const sd = (pScores[b] || 0) - (pScores[a] || 0);
+                if (sd !== 0) return sd;
+                const accA = pPossible[a] > 0 ? pScores[a] / pPossible[a] : 0;
+                const accB = pPossible[b] > 0 ? pScores[b] / pPossible[b] : 0;
                 return accB - accA;
             });
-            let rank = sortedParticipants.indexOf(phone) + 1;
-
+            const rank = sortedPs.indexOf(phone) + 1;
             if (rank > 0) {
-                document.getElementById('dashRankBadge').innerText = `#${rank}`;
-                document.getElementById('dashRankSubtext').innerText = `Out of ${sortedParticipants.length} Participants`;
+                document.getElementById('dashRankBadge').innerText   = `#${rank}`;
+                document.getElementById('dashRankSubtext').innerText = `Out of ${sortedPs.length} Participants`;
             } else {
-                document.getElementById('dashRankBadge').innerText = `#--`;
-                document.getElementById('dashRankSubtext').innerText = `Not Ranked Yet`;
+                document.getElementById('dashRankBadge').innerText   = '#--';
+                document.getElementById('dashRankSubtext').innerText = 'Not Ranked Yet';
             }
 
-            const streak = relevantSubs.length;
-            document.getElementById('dashStreak').innerText = `${streak} ${streak === 1 ? 'Day' : 'Days'}`;
+            document.getElementById('dashStreak').innerText = `${relevantSubs.length} ${relevantSubs.length === 1 ? 'Day' : 'Days'}`;
 
-            renderProfileBadges(relevantSubs, totalScore, accuracy, streak);
+            renderProfileBadges(relevantSubs, totalScore, accuracy, relevantSubs.length);
 
-            const listContainer = document.getElementById('studentQuizHistoryList');
-            listContainer.innerHTML = '';
+            // --- Sort ALL published quizzes by date ascending (quiz 1 first) ---
+            const allQuizzesSorted = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
+            const totalQuizzes     = allQuizzesSorted.length;
+            const attemptedCount   = relevantSubs.length;
 
-            if (relevantSubs.length === 0) {
-                listContainer.innerHTML = `<div class="text-xs text-slate-400 p-4 text-center">No quiz attempts recorded yet. Take today's quiz to get started!</div>`;
-                const reviewContainer = document.getElementById('reviewQuestionsContainer');
-                if (reviewContainer) {
-                    reviewContainer.innerHTML = `<div class="text-center py-12 text-slate-400 text-xs"><i class="fa-solid fa-book-open-reader text-3xl mb-2 text-slate-300"></i><p>Take a quiz first, then come back to review your detailed marks.</p></div>`;
+            // --- Participation progress bar ---
+            const pct = totalQuizzes > 0 ? Math.round((attemptedCount / totalQuizzes) * 100) : 0;
+            const summaryPill = document.getElementById('participationSummaryPill');
+            const progressBar = document.getElementById('participationProgressBar');
+            const progressLbl = document.getElementById('participationProgressLabel');
+            if (summaryPill) summaryPill.innerText = `${attemptedCount} / ${totalQuizzes} Quizzes`;
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            if (progressLbl) {
+                if (attemptedCount === 0) {
+                    progressLbl.innerText = 'No quizzes attempted yet — take today\'s quiz!';
+                } else if (attemptedCount === totalQuizzes) {
+                    progressLbl.innerText = `Perfect attendance! All ${totalQuizzes} quizzes completed.`;
+                } else {
+                    progressLbl.innerText = `${attemptedCount} of ${totalQuizzes} quizzes completed (${pct}%)`;
                 }
-                document.getElementById('reviewQuizTitle').innerText = 'Select a quiz to review';
-                document.getElementById('reviewQuizMeta').innerText = 'Question by question analysis';
-                document.getElementById('reviewQuizScoreBadge').innerText = 'Score: -/-';
+            }
+
+            // --- Build sidebar list ---
+            const listContainer = document.getElementById('studentQuizHistoryList');
+            const countLabel    = document.getElementById('quizListCountLabel');
+            listContainer.innerHTML = '';
+            if (countLabel) countLabel.innerText = `${totalQuizzes} total`;
+
+            if (totalQuizzes === 0) {
+                listContainer.innerHTML = `<div class="text-xs text-slate-400 p-4 text-center">No quizzes have been published yet.</div>`;
                 return;
             }
 
-            relevantSubs.sort((a, b) => new Date(b.quizDate) - new Date(a.quizDate));
-            relevantSubs.forEach(sub => {
-                const quiz = appState.quizzes.find(q => q.id === sub.quizId);
+            // Pick the first attempted quiz as default selection (most recent date)
+            if (!appState.selectedReviewQuizId) {
+                const firstAttempted = [...allQuizzesSorted]
+                    .reverse()
+                    .find(q => subByDate[q.date]);
+                if (firstAttempted) appState.selectedReviewQuizId = firstAttempted.id;
+            }
+
+            allQuizzesSorted.forEach((quiz, idx) => {
+                const quizNumber = idx + 1;
+                const sub        = subByDate[quiz.date];   // undefined = not attempted
+                const attempted  = !!sub;
+
+                // Active selection highlight
+                const isSelected = appState.selectedReviewQuizId === quiz.id;
+
                 const item = document.createElement('div');
-                item.className = `p-3.5 rounded-xl border cursor-pointer transition-all ${appState.selectedReviewQuizId === sub.quizId
-                        ? 'border-brand-500 bg-brand-50/70 shadow-sm'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`;
+                item.setAttribute('data-quiz-id', quiz.id);
+                item.setAttribute('data-attempted', attempted ? 'true' : 'false');
+                item.className = [
+                    'rounded-xl border cursor-pointer transition-all select-none',
+                    isSelected
+                        ? 'border-brand-500 bg-brand-50 shadow-sm ring-1 ring-brand-400/30'
+                        : attempted
+                            ? 'border-emerald-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/30'
+                            : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
+                ].join(' ');
 
-                item.onclick = () => reviewStudentQuiz(sub.quizId);
+                item.onclick = () => reviewStudentQuiz(quiz.id);
 
-                item.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-800">${sub.quizDate}</span>
-                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">${sub.score}/${sub.totalPossible} Marks</span>
-                    </div>
-                    <div class="text-xs font-semibold text-slate-600 truncate mt-1">${quiz ? quiz.title : 'Seerah Quiz'}</div>
-                `;
+                if (attempted) {
+                    const scorePct = sub.totalPossible > 0
+                        ? Math.round((sub.score / sub.totalPossible) * 100)
+                        : 0;
+                    const scoreColor = scorePct >= 80
+                        ? 'text-emerald-700 bg-emerald-100'
+                        : scorePct >= 50
+                            ? 'text-amber-700 bg-amber-100'
+                            : 'text-rose-700 bg-rose-100';
+
+                    item.innerHTML = `
+                        <div class="p-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-emerald-600 text-white text-[10px] font-extrabold flex items-center justify-center">${quizNumber}</span>
+                                    <span class="text-xs font-bold text-slate-800 truncate">${quiz.title}</span>
+                                </div>
+                                <span class="flex-shrink-0 text-[11px] font-extrabold ${scoreColor} px-2 py-0.5 rounded-full whitespace-nowrap">${sub.score}/${sub.totalPossible}</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1.5 pl-8">
+                                <span class="text-[10px] text-slate-400">${quiz.date}</span>
+                                <span class="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Attempted
+                                </span>
+                            </div>
+                            <div class="mt-1.5 pl-8">
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="h-full rounded-full ${scorePct >= 80 ? 'bg-emerald-500' : scorePct >= 50 ? 'bg-amber-400' : 'bg-rose-400'}" style="width:${scorePct}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <div class="p-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-slate-300 text-slate-600 text-[10px] font-extrabold flex items-center justify-center">${quizNumber}</span>
+                                    <span class="text-xs font-bold text-slate-500 truncate">${quiz.title}</span>
+                                </div>
+                                <span class="flex-shrink-0 text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">—/—</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1.5 pl-8">
+                                <span class="text-[10px] text-slate-400">${quiz.date}</span>
+                                <span class="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-xmark text-slate-300"></i> Not Attempted
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 listContainer.appendChild(item);
             });
 
-            if (relevantSubs.length > 0 && !appState.selectedReviewQuizId) {
-                appState.selectedReviewQuizId = relevantSubs[0].quizId;
-            }
+            // Auto-open review panel for selected quiz
             if (appState.selectedReviewQuizId) {
                 reviewStudentQuiz(appState.selectedReviewQuizId);
             }
@@ -1849,48 +1935,129 @@
 
         function reviewStudentQuiz(quizId) {
             appState.selectedReviewQuizId = quizId;
+
+            // Re-highlight the selected item in the sidebar
+            document.querySelectorAll('#studentQuizHistoryList > div').forEach(el => {
+                const isThis = el.getAttribute('data-quiz-id') === quizId;
+                el.className = el.className
+                    .replace(/border-brand-500 bg-brand-50 shadow-sm ring-1 ring-brand-400\/30/g, '')
+                    .replace(/border-emerald-200 bg-white hover:border-emerald-400 hover:bg-emerald-50\/30/g, '')
+                    .replace(/border-slate-200 bg-slate-50\/60 hover:border-slate-300/g, '')
+                    .trim();
+                if (isThis) {
+                    el.className += ' border-brand-500 bg-brand-50 shadow-sm ring-1 ring-brand-400/30';
+                } else if (el.getAttribute('data-attempted') === 'true') {
+                    el.className += ' border-emerald-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/30';
+                } else {
+                    el.className += ' border-slate-200 bg-slate-50/60 hover:border-slate-300';
+                }
+            });
+
             const phone = appState.currentStudent ? normalizePhone(appState.currentStudent.phone) : '';
-            const sub = appState.submissions.find(s => s.quizId === quizId && normalizePhone(s.participantPhone) === phone);
-            const quiz = appState.quizzes.find(q => q.id === quizId);
+            const quiz  = appState.quizzes.find(q => q.id === quizId);
 
-            if (!sub || !quiz) return;
-
-            document.getElementById('reviewQuizTitle').innerText = quiz.title;
-            document.getElementById('reviewQuizMeta').innerText = `Date: ${quiz.date} • Submitted by ${sub.participantName}`;
-            document.getElementById('reviewQuizScoreBadge').innerText = `Score: ${sub.score || 0} / ${sub.totalPossible || 0}`;
+            if (!quiz) return;
 
             const container = document.getElementById('reviewQuestionsContainer');
+            const titleEl   = document.getElementById('reviewQuizTitle');
+            const metaEl    = document.getElementById('reviewQuizMeta');
+            const scoreBadge = document.getElementById('reviewQuizScoreBadge');
+
+            // Find this participant's submission for this quiz date
+            const sub = appState.submissions
+                .filter(s => normalizePhone(s.participantPhone) === phone && s.quizDate === quiz.date)
+                .sort((a, b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0))[0];
+
+            // --- Quiz number (position in sorted list) ---
+            const allSorted  = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
+            const quizNumber = allSorted.findIndex(q => q.id === quizId) + 1;
+
+            titleEl.innerText = `Quiz ${quizNumber}: ${quiz.title}`;
+            metaEl.innerText  = `Date: ${quiz.date}`;
+
+            // ── NOT ATTEMPTED ────────────────────────────────────────────────
+            if (!sub) {
+                scoreBadge.className = 'px-3 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full border border-slate-200';
+                scoreBadge.innerText = 'Not Attempted';
+
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-14 text-center space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-3xl">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-600">Quiz ${quizNumber} Not Attempted</p>
+                            <p class="text-xs text-slate-400 mt-1">You did not participate in this quiz (${quiz.date}).</p>
+                        </div>
+                        <div class="w-full border border-slate-100 rounded-xl p-4 bg-slate-50 space-y-2 text-left">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Correct Answers — Study Material</p>
+                            ${Array.isArray(quiz.questions) ? quiz.questions.map((q, idx) => `
+                                <div class="p-3 rounded-lg bg-white border border-slate-200 space-y-1.5">
+                                    <p class="text-xs font-bold text-slate-800">Q${idx + 1}. ${q.text}</p>
+                                    <div class="space-y-1">
+                                        ${q.options.map((opt, oIdx) => `
+                                            <div class="px-3 py-1.5 rounded-lg text-xs flex items-center justify-between
+                                                ${oIdx === q.correctIndex
+                                                    ? 'bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold'
+                                                    : 'bg-white border border-slate-200 text-slate-500'}">
+                                                <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
+                                                ${oIdx === q.correctIndex
+                                                    ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct</span>'
+                                                    : ''}
+                                            </div>`).join('')}
+                                    </div>
+                                </div>`).join('')
+                            : '<p class="text-xs text-slate-400">No questions available.</p>'}
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            // ── ATTEMPTED ────────────────────────────────────────────────────
+            scoreBadge.className = 'px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200';
+            scoreBadge.innerText = `Score: ${sub.score} / ${sub.totalPossible}`;
+            metaEl.innerText = `Date: ${quiz.date} • Submitted by ${sub.participantName} • Time: ${sub.timeTakenSeconds || 0}s`;
+
             container.innerHTML = '';
 
-            if (!Array.isArray(quiz.questions)) {
+            if (!Array.isArray(quiz.questions) || quiz.questions.length === 0) {
                 container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">No questions available for this quiz.</div>`;
                 return;
             }
 
             quiz.questions.forEach((q, idx) => {
                 const userChoice = sub.answers ? sub.answers[q.id] : undefined;
-                const isCorrect = userChoice !== undefined && userChoice === q.correctIndex;
+                const isCorrect  = userChoice !== undefined && userChoice === q.correctIndex;
+                const marks      = q.marks || 2;
 
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} space-y-2`;
 
-                let optionsHtml = q.options.map((opt, oIdx) => {
-                    let optClass = 'bg-white border-slate-200 text-slate-700';
-                    if (oIdx === q.correctIndex) optClass = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
-                    if (oIdx === userChoice && !isCorrect) optClass = 'bg-rose-100 border-rose-300 text-rose-900 line-through';
+                const optionsHtml = q.options.map((opt, oIdx) => {
+                    let cls = 'bg-white border-slate-200 text-slate-700';
+                    if (oIdx === q.correctIndex)                cls = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
+                    if (oIdx === userChoice && !isCorrect)      cls = 'bg-rose-100 border-rose-300 text-rose-900 line-through';
 
-                    return `<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
+                    return `<div class="px-3 py-2 rounded-lg border text-xs ${cls} flex items-center justify-between">
                         <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
-                        ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
-                        ${oIdx === userChoice && !isCorrect ? '<span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-semibold">Your Pick</span>' : ''}
+                        <span class="flex items-center gap-1">
+                            ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct</span>' : ''}
+                            ${oIdx === userChoice && oIdx === q.correctIndex ? '<span class="text-[10px] bg-brand-600 text-white px-1.5 py-0.5 rounded font-semibold">Your Answer</span>' : ''}
+                            ${oIdx === userChoice && !isCorrect ? '<span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-semibold">Your Pick</span>' : ''}
+                        </span>
                     </div>`;
                 }).join('');
 
-                const marks = q.marks || 2;
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">Q${idx + 1}. ${q.text}</span>
-                        <span class="text-xs font-extrabold ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${isCorrect ? '+' + marks : '0'} Marks</span>
+                        <span class="text-xs font-bold ${isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                            Q${idx + 1}. ${q.text}
+                        </span>
+                        <span class="text-xs font-extrabold flex items-center gap-1 ${isCorrect ? 'text-emerald-600' : 'text-rose-500'}">
+                            ${isCorrect
+                                ? `<i class="fa-solid fa-circle-check"></i> +${marks}`
+                                : `<i class="fa-solid fa-circle-xmark"></i> 0`}
+                        </span>
                     </div>
                     <div class="space-y-1.5 pt-1">${optionsHtml}</div>
                 `;
