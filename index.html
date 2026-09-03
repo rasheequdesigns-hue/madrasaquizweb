@@ -976,7 +976,7 @@
             if (raw === null || raw === undefined) return '';
             let s = sanitizeDisplayName(raw);
             if (!s) return '';
-            const translitMap = {
+            const latinMap = {
                 'À':'A','Á':'A','Â':'A','Ã':'A','Ä':'A','Å':'A','Æ':'AE',
                 'Ç':'C','Č':'C','Ć':'C','Ð':'D','Đ':'D',
                 'È':'E','É':'E','Ê':'E','Ë':'E','Ě':'E',
@@ -985,6 +985,7 @@
                 'Ŕ':'R','Ř':'R','Š':'S','Ś':'S','Ş':'S',
                 'Þ':'TH','Ť':'T','Ù':'U','Ú':'U','Û':'U','Ü':'U','Ů':'U',
                 'Ý':'Y','Ÿ':'Y','Ž':'Z','Ź':'Z','Ż':'Z',
+                'Ł':'L','Ľ':'L','Ŀ':'L',
                 'à':'a','á':'a','â':'a','ã':'a','ä':'a','å':'a','æ':'ae',
                 'ç':'c','č':'c','ć':'c','ð':'d','đ':'d',
                 'è':'e','é':'e','ê':'e','ë':'e','ě':'e',
@@ -993,27 +994,220 @@
                 'ŕ':'r','ř':'r','š':'s','ś':'s','ş':'s','ß':'ss',
                 'þ':'th','ť':'t','ù':'u','ú':'u','û':'u','ü':'u','ů':'u',
                 'ý':'y','ÿ':'y','ž':'z','ź':'z','ż':'z',
+                'ł':'l','ľ':'l','ŀ':'l',
                 '€':'E','£':'L','¥':'Y','¢':'c','©':'(c)','®':'(r)','™':'TM',
                 '“':'"','”':'"','‘':"'",'’':"'",'–':'-','—':'-','…':'...','·':'.','•':'*',
                 '†':'+','‡':'+','⁄':'/','‹':'<','›':'>','«':'<<','»':'>>','„':'",'
             };
+            const malayalamMap = {
+                '\u0D02':'m','\u0D03':'h','\u0D05':'a','\u0D06':'aa','\u0D07':'i','\u0D08':'ii',
+                '\u0D09':'u','\u0D0A':'uu','\u0D0B':'ru','\u0D0C':'lu','\u0D0E':'e','\u0D0F':'e',
+                '\u0D10':'ai','\u0D12':'o','\u0D13':'o','\u0D14':'au',
+                '\u0D15':'k','\u0D16':'kh','\u0D17':'g','\u0D18':'gh','\u0D19':'ng',
+                '\u0D1A':'c','\u0D1B':'ch','\u0D1C':'j','\u0D1D':'jh','\u0D1E':'nj',
+                '\u0D1F':'t','\u0D20':'th','\u0D21':'d','\u0D22':'dh','\u0D23':'n',
+                '\u0D24':'t','\u0D25':'th','\u0D26':'d','\u0D27':'dh','\u0D28':'n',
+                '\u0D29':'n','\u0D2A':'p','\u0D2B':'ph','\u0D2C':'b','\u0D2D':'bh','\u0D2E':'m',
+                '\u0D2F':'y','\u0D30':'r','\u0D31':'r','\u0D32':'l','\u0D33':'l','\u0D34':'zh',
+                '\u0D35':'v','\u0D36':'sh','\u0D37':'sh','\u0D38':'s','\u0D39':'h',
+                '\u0D3A':'','\u0D3B':'','\u0D3C':'',
+                '\u0D3E':'aa','\u0D3F':'i','\u0D40':'ii','\u0D41':'u','\u0D42':'uu',
+                '\u0D43':'ru','\u0D44':'ruu','\u0D46':'e','\u0D47':'e','\u0D48':'ai',
+                '\u0D4A':'o','\u0D4B':'o','\u0D4C':'au','\u0D4D':'',
+                '\u0D57':'o',
+                '\u0D60':'ruu','\u0D61':'luu',
+                '\u0D66':'0','\u0D67':'1','\u0D68':'2','\u0D69':'3','\u0D6A':'4',
+                '\u0D6B':'5','\u0D6C':'6','\u0D6D':'7','\u0D6E':'8','\u0D6F':'9',
+                '\u0D70':'om','\u0D71':'om','\u0D72':'om','\u0D73':'om','\u0D79':'q'
+            };
+            const devanagariMap = {
+                '\u0902':'m','\u0903':'h','\u0905':'a','\u0906':'aa','\u0907':'i','\u0908':'ii',
+                '\u0909':'u','\u090A':'uu','\u090B':'ru','\u090C':'lu',
+                '\u090F':'e','\u0910':'ai','\u0913':'o','\u0914':'au',
+                '\u0915':'k','\u0916':'kh','\u0917':'g','\u0918':'gh','\u0919':'ng',
+                '\u091A':'c','\u091B':'ch','\u091C':'j','\u091D':'jh','\u091E':'nj',
+                '\u091F':'t','\u0920':'th','\u0921':'d','\u0922':'dh','\u0923':'n',
+                '\u0924':'t','\u0925':'th','\u0926':'d','\u0927':'dh','\u0928':'n',
+                '\u0929':'n','\u092A':'p','\u092B':'ph','\u092C':'b','\u092D':'bh','\u092E':'m',
+                '\u092F':'y','\u0930':'r','\u0931':'r','\u0932':'l','\u0933':'l','\u0934':'l',
+                '\u0935':'v','\u0936':'sh','\u0937':'sh','\u0938':'s','\u0939':'h',
+                '\u093C':'',
+                '\u093E':'aa','\u093F':'i','\u0940':'ii','\u0941':'u','\u0942':'uu',
+                '\u0943':'ru','\u0944':'ruu','\u0945':'','\u0946':'e','\u0947':'e','\u0948':'ai',
+                '\u0949':'','\u094A':'o','\u094B':'o','\u094C':'au',
+                '\u094D':'\u200D','\u094E':'\u200D','\u094F':'\u200D',
+                '\u0950':'om',
+                '\u0960':'ruu','\u0961':'luu',
+                '\u0966':'0','\u0967':'1','\u0968':'2','\u0969':'3','\u096A':'4',
+                '\u096B':'5','\u096C':'6','\u096D':'7','\u096E':'8','\u096F':'9'
+            };
+            const arabicMap = {
+                '\u0621':'\'','\u0622':'aa','\u0623':'a\'','\u0624':'a\'w',
+                '\u0625':'i\'','\u0626':'i\'y','\u0627':'a','\u0628':'b',
+                '\u0629':'t','\u062A':'t','\u062B':'th','\u062C':'j',
+                '\u062D':'h','\u062E':'kh','\u062F':'d','\u0630':'dh',
+                '\u0631':'r','\u0632':'z','\u0633':'s','\u0634':'sh',
+                '\u0635':'s','\u0636':'d','\u0637':'t','\u0638':'z',
+                '\u0639':"'",'\u063A':'gh',
+                '\u0640':'',
+                '\u0641':'f','\u0642':'q','\u0643':'k','\u0644':'l',
+                '\u0645':'m','\u0646':'n','\u0647':'h','\u0648':'w',
+                '\u0649':'a','\u064A':'y',
+                '\u064B':'an','\u064C':'un','\u064D':'in',
+                '\u064E':'a','\u064F':'u','\u0650':'i',
+                '\u0651':'\u200D','\u0652':'',
+                '\u0653':'\u200D','\u0654':'\u200D','\u0655':'\u200D',
+                '\u0670':'a','\u0671':'a','\u067E':'p','\u0686':'ch',
+                '\u0688':'dd','\u0691':'rr','\u0698':'zh','\u06A9':'k',
+                '\u06AF':'g','\u06BA':'nn','\u06BE':'h','\u06C1':'h',
+                '\u06C2':'\u200D','\u06CB':'\u200D',
+                '\u06CC':'y','\u06CD':'y','\u06D0':'y'
+            };
             let out = '';
             for (let i = 0; i < s.length; i++) {
                 const ch = s[i];
-                if (translitMap[ch]) { out += translitMap[ch]; continue; }
                 const code = ch.charCodeAt(0);
+                if (latinMap[ch]) { out += latinMap[ch]; continue; }
+                if (malayalamMap[ch] !== undefined) { out += malayalamMap[ch]; continue; }
+                if (devanagariMap[ch] !== undefined) { out += devanagariMap[ch]; continue; }
+                if (arabicMap[ch] !== undefined) { out += arabicMap[ch]; continue; }
                 if (code >= 0x20 && code <= 0x7E) {
                     out += ch;
                 } else if (code >= 0xA0 && code <= 0xFF) {
-                    out += ch;
+                    out += latinMap[ch] || _stripDiacritics(ch) || ch;
+                } else if (code >= 0x100 && code <= 0x24F) {
+                    const stripped = _stripDiacritics(ch);
+                    if (stripped) { out += stripped; continue; }
+                    const lower = ch.toLowerCase();
+                    if (latinMap[ch]) { out += latinMap[ch]; }
+                    else if (latinMap[lower]) { out += latinMap[lower]; }
+                } else {
+                    let approx = latinMap[ch] || '';
+                    if (!approx && ch.normalize) {
+                        try {
+                            const nfd = ch.normalize('NFD');
+                            for (let j = 0; j < nfd.length; j++) {
+                                const c2 = nfd[j];
+                                const cc2 = c2.charCodeAt(0);
+                                if ((cc2 >= 0x41 && cc2 <= 0x5A) || (cc2 >= 0x61 && cc2 <= 0x7A)) {
+                                    approx += c2;
+                                } else if (latinMap[c2]) {
+                                    approx += latinMap[c2];
+                                } else if (cc2 >= 0xC0 && cc2 <= 0x24F) {
+                                    const s2 = _stripDiacritics(c2);
+                                    if (s2) approx += s2;
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                    out += approx;
                 }
             }
-            out = out.replace(/\s+/g, ' ').trim();
+            out = out.replace(/[\u200C\u200D\uFEFF\u034F\u180E]/g, '')
+                     .replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]/g, '')
+                     .replace(/[\u00AD\u061C\u115F\u1160\u3164\uFFA0]/g, '')
+                     .replace(/'+/g, "'")
+                     .replace(/^'+|'+$/g, '');
+            out = _insertIndicImplicitA(out);
+            out = out.replace(/a{3,}/g, 'aa')
+                     .replace(/i{3,}/g, 'ii')
+                     .replace(/u{3,}/g, 'uu')
+                     .replace(/([a-zA-Z])\1{2,}/g, '$1$1')
+                     .replace(/\s+/g, ' ')
+                     .trim();
+            out = _titleCaseWords(out);
             if (!out) {
                 const stripped = sanitizeDisplayName(raw).replace(/\s+/g, ' ').trim();
-                out = stripped ? '[Unicode Name]' : '';
+                if (stripped) {
+                    let fallback = '';
+                    for (let i = 0; i < stripped.length; i++) {
+                        const c = stripped[i];
+                        const cc = c.charCodeAt(0);
+                        if ((cc >= 0x41 && cc <= 0x5A) || (cc >= 0x61 && cc <= 0x7A) || (cc >= 0x30 && cc <= 0x39) || c === ' ' || c === '-' || c === '.' || c === "'") {
+                            fallback += c;
+                        } else if (latinMap[c]) {
+                            fallback += latinMap[c];
+                        } else {
+                            const sd = _stripDiacritics(c);
+                            if (sd) fallback += sd;
+                        }
+                    }
+                    fallback = fallback.replace(/\s+/g, ' ').trim();
+                    fallback = _titleCaseWords(fallback);
+                    if (fallback) return fallback;
+                    return 'P' + (stripped.length > 0 ? stripped.length : '');
+                }
+                return '';
             }
             return out;
+        }
+
+        function _insertIndicImplicitA(text) {
+            if (!text) return '';
+            const consonantEnd = /[bcdfghjklmnpqrstvwxyz]$/i;
+            const vowels = 'aeiou';
+            const viramaSeq = /(?:aa|ii|uu|ruu|ru|lu|ai|au|ee|oo)[a]*(?=\s|$|[bcdfghjklmnpqrstvwxyz])/gi;
+            let out = '';
+            const tokens = text.split(/(\s+|[0-9\-.'"]+)/);
+            for (let t = 0; t < tokens.length; t++) {
+                const tok = tokens[t];
+                if (!tok) continue;
+                if (!/^[a-zA-Z]+$/.test(tok)) { out += tok; continue; }
+                let word = tok;
+                let rebuilt = '';
+                for (let i = 0; i < word.length; i++) {
+                    const ch = word[i];
+                    const next = word[i+1] || '';
+                    const prev = word[i-1] || '';
+                    rebuilt += ch;
+                    const isCons = /^[bcdfghjklmnpqrstvwxyz]$/i.test(ch);
+                    const nextIsVowel = /^[aeiou]$/i.test(next);
+                    const nextIsCons = /^[bcdfghjklmnpqrstvwxyz]$/i.test(next);
+                    const atEnd = !next;
+                    const afterVirama = (prev === 'a' && /^[bcdfghjklmnpsrtvwyz]$/i.test(ch)) ? false : false;
+                    if (isCons && !nextIsVowel) {
+                        if (nextIsCons && (next.toLowerCase() !== 'h')) {
+                            rebuilt += 'a';
+                        } else if (atEnd) {
+                            rebuilt += 'a';
+                        } else if (next.toLowerCase() === 'h') {
+                            if (['c','s','t','p','k','g','d','b'].includes(ch.toLowerCase())) {
+                            } else {
+                                rebuilt += 'a';
+                            }
+                        }
+                    }
+                }
+                out += rebuilt;
+            }
+            out = out.replace(/a{3,}/g, 'aa');
+            out = out.replace(/^A(?=[A-Z])/g, '');
+            return out;
+        }
+
+        function _titleCaseWords(text) {
+            if (!text) return '';
+            return text.replace(/\w\S*/g, function(w) {
+                return w.charAt(0).toUpperCase() + w.substr(1).toLowerCase();
+            });
+        }
+
+        function _stripDiacritics(ch) {
+            if (!ch) return '';
+            try {
+                if (!ch.normalize) return ch;
+                const nfd = ch.normalize('NFD');
+                let result = '';
+                for (let i = 0; i < nfd.length; i++) {
+                    const cc = nfd.charCodeAt(i);
+                    if (cc < 0x0300 || (cc > 0x036F && cc < 0x1AB0) || (cc > 0x1AFF && cc < 0x1DC0) || (cc > 0x1DFF && cc < 0x20D0) || (cc > 0x20FF && cc < 0xFE20) || cc > 0xFE2F) {
+                        result += nfd[i];
+                    }
+                }
+                return result;
+            } catch (e) {
+                return '';
+            }
         }
 
         function deduplicateParticipants() {
