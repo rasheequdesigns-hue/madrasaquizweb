@@ -1763,9 +1763,13 @@
             initSupabaseClient();
             await loadData();
 
-            // Check if URL has share link parameters (e.g. ?date=2026-08-16)
+            // Check if URL has share link parameters (e.g. ?date=2026-08-16&quizId=xyz)
             const urlParams = new URLSearchParams(window.location.search);
-            const dateParam = urlParams.get('date');
+            const dateParam = urlParams.get('date') || urlParams.get('quizDate');
+            const idParam = urlParams.get('id') || urlParams.get('quizId');
+            if (idParam) {
+                appState.selectedQuizId = idParam;
+            }
             if (dateParam) {
                 document.getElementById('inputQuizDate').value = dateParam;
                 showToast(`Loaded question link for date: ${dateParam}`, 'info');
@@ -2257,7 +2261,7 @@
 
                             <div class="flex items-center gap-3 shrink-0 pt-2 lg:pt-0">
                                 ${isToday ? `
-                                    <button onclick="handleQuizSelection('${quiz.date}')" class="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-amber-950 rounded-2xl font-extrabold text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105 cursor-pointer">
+                                    <button onclick="handleQuizSelection('${quiz.date}', '${quiz.id}')" class="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-amber-950 rounded-2xl font-extrabold text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105 cursor-pointer">
                                         <i class="fa-solid fa-play text-lg"></i>
                                         <span>ENTER FINALE QUIZ NOW</span>
                                     </button>
@@ -2285,7 +2289,7 @@
                             <h3 class="text-xl font-bold">${quiz.title}</h3>
                             <p class="text-xs text-emerald-100">Questions ready for ${quiz.date}</p>
                         </div>
-                        <button onclick="handleQuizSelection('${quiz.date}')" class="z-10 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-xl font-bold text-sm shadow-md transition-all whitespace-nowrap flex items-center space-x-1.5">
+                        <button onclick="handleQuizSelection('${quiz.date}', '${quiz.id}')" class="z-10 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-xl font-bold text-sm shadow-md transition-all whitespace-nowrap flex items-center space-x-1.5 cursor-pointer">
                             <span>Attempt Quiz</span>
                             <i class="fa-solid fa-bolt"></i>
                         </button>
@@ -2327,8 +2331,15 @@
             }
         }
 
-        function handleQuizSelection(quizDate) {
+        function handleQuizSelection(quizDate, quizId = null) {
             document.getElementById('inputQuizDate').value = quizDate;
+            
+            if (quizId) {
+                appState.selectedQuizId = quizId;
+            } else {
+                const targetQ = appState.quizzes.find(q => q.date === quizDate);
+                if (targetQ) appState.selectedQuizId = targetQ.id;
+            }
             
             if (!appState.currentStudent) {
                 const nameInput = document.getElementById('inputStudentName');
@@ -2338,15 +2349,22 @@
                 return;
             }
             
-            const quiz = appState.quizzes.find(q => q.date === quizDate);
+            let quiz = null;
+            if (appState.selectedQuizId) {
+                quiz = appState.quizzes.find(q => q.id === appState.selectedQuizId);
+            }
+            if (!quiz) {
+                quiz = appState.quizzes.find(q => q.date === quizDate);
+            }
             if (!quiz) return;
             
             const normPhone = normalizePhone(appState.currentStudent.phone);
             const existingSub = appState.submissions.find(s =>
-                normalizePhone(s.participantPhone) === normPhone && s.quizDate === quizDate
+                normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === quizDate)
             );
             if (existingSub) {
-                showToast('You have already submitted answers for this quiz date. Opening your profile to review.', 'info');
+                showToast('You have already submitted answers for this quiz. Opening your profile to review.', 'info');
+                appState.selectedReviewQuizId = quiz.id;
                 switchView('studentDashboard');
                 return;
             }
@@ -2414,19 +2432,26 @@
             if (!regOk) return;
             checkLoginSection();
 
-            const existingSub = appState.submissions.find(s =>
-                normalizePhone(s.participantPhone) === normPhone && s.quizDate === dateSelected
-            );
-            if (existingSub) {
-                showToast('You have already submitted answers for this quiz date. Opening your profile history.', 'info');
-                appState.selectedReviewQuizId = existingSub.quizId;
+            let quiz = null;
+            if (appState.selectedQuizId) {
+                quiz = appState.quizzes.find(q => q.id === appState.selectedQuizId);
+            }
+            if (!quiz) {
+                quiz = appState.quizzes.find(q => q.date === dateSelected);
+            }
+
+            if (!quiz) {
+                showToast(`No quiz scheduled for ${dateSelected}. Showing your profile instead.`, 'info');
                 switchView('studentDashboard');
                 return;
             }
 
-            const quiz = appState.quizzes.find(q => q.date === dateSelected);
-            if (!quiz) {
-                showToast(`No quiz scheduled for ${dateSelected}. Showing your profile instead.`, 'info');
+            const existingSub = appState.submissions.find(s =>
+                normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === dateSelected)
+            );
+            if (existingSub) {
+                showToast('You have already submitted answers for this quiz. Opening your profile history.', 'info');
+                appState.selectedReviewQuizId = quiz.id;
                 switchView('studentDashboard');
                 return;
             }
@@ -2988,9 +3013,9 @@
             const normPhone = normalizePhone(appState.currentStudent.phone);
             const quizDate = quiz.date;
 
-            // FINAL GUARD: Strict one-submission-per-phone-per-quiz-date
+            // FINAL GUARD: Strict one-submission-per-phone-per-quiz
             const alreadySubmitted = appState.submissions.find(s =>
-                normalizePhone(s.participantPhone) === normPhone && s.quizDate === quizDate
+                normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === quizDate)
             );
             if (alreadySubmitted) {
                 showToast('You have already submitted this quiz. Opening your profile.', 'info');
@@ -3408,7 +3433,7 @@
             const sorted = [...appState.quizzes].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             sorted.forEach(q => {
-                const shareUrl = `${window.location.origin}${window.location.pathname}?date=${q.date}`;
+                const shareUrl = `${window.location.origin}${window.location.pathname}?date=${q.date}&quizId=${q.id}`;
                 const safeUrl = shareUrl.replace(/'/g, "\\'");
                 const card = document.createElement('div');
                 card.className = "p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3";
@@ -3836,7 +3861,7 @@
 
         function copyComingSoonQuizLink() {
             if (!currentComingSoonQuiz) return;
-            const safeUrl = `${window.location.origin}${window.location.pathname}?quizDate=${encodeURIComponent(currentComingSoonQuiz.date)}`;
+            const safeUrl = `${window.location.origin}${window.location.pathname}?quizDate=${encodeURIComponent(currentComingSoonQuiz.date)}&quizId=${encodeURIComponent(currentComingSoonQuiz.id)}`;
             copyToClipboard(safeUrl);
         }
 
