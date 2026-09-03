@@ -4447,10 +4447,11 @@
             tbody.innerHTML = '';
 
             const entries = [...(appState.submissions || [])]
+                .filter(s => s.isManualEntry === true || (s.id && String(s.id).startsWith('manual-')))
                 .sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
 
             if (entries.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 font-medium">No manual entries or submissions recorded yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 font-medium">No manually entered submissions recorded yet.</td></tr>`;
                 return;
             }
 
