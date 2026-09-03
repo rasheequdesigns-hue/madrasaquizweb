@@ -2331,7 +2331,7 @@
             }
         }
 
-        function handleQuizSelection(quizDate, quizId = null) {
+        async function handleQuizSelection(quizDate, quizId = null) {
             document.getElementById('inputQuizDate').value = quizDate;
             
             if (quizId) {
@@ -2341,12 +2341,22 @@
                 if (targetQ) appState.selectedQuizId = targetQ.id;
             }
             
+            const nameInput = document.getElementById('inputStudentName');
+            const phoneInput = document.getElementById('inputStudentPhone');
+            const nameVal = sanitizeDisplayName(nameInput ? nameInput.value : '');
+            const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+            const normPhoneVal = normalizePhone(phoneVal);
+
             if (!appState.currentStudent) {
-                const nameInput = document.getElementById('inputStudentName');
-                nameInput.focus();
-                showToast('Please enter your name and phone number to start', 'info');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+                if (nameVal && normPhoneVal.length >= 10) {
+                    const regOk = await registerUser(nameVal, normPhoneVal);
+                    if (!regOk) return;
+                } else {
+                    if (nameInput) nameInput.focus();
+                    showToast('Please enter your name and phone number to start', 'info');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
             }
             
             let quiz = null;
