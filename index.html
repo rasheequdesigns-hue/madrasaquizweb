@@ -2759,40 +2759,66 @@
             renderLeaderboard();
             renderAdminQuizzes();
             renderAdminSubmissionsTable();
+            renderAdminGrandQuizzes();
+            renderGrandLeaderboard();
+            populateManualParticipantsSelect();
+            updateManualEntryValidation();
         }
 
         function switchAdminTab(tab) {
-            document.getElementById('adminTabLeaderboard').classList.add('hidden');
-            document.getElementById('adminTabQuizzes').classList.add('hidden');
-            document.getElementById('adminTabStudents').classList.add('hidden');
+            if (document.getElementById('adminTabLeaderboard')) document.getElementById('adminTabLeaderboard').classList.add('hidden');
+            if (document.getElementById('adminTabQuizzes')) document.getElementById('adminTabQuizzes').classList.add('hidden');
+            if (document.getElementById('adminTabGrandQuiz')) document.getElementById('adminTabGrandQuiz').classList.add('hidden');
+            if (document.getElementById('adminTabStudents')) document.getElementById('adminTabStudents').classList.add('hidden');
+            if (document.getElementById('adminTabManual')) document.getElementById('adminTabManual').classList.add('hidden');
             if (document.getElementById('adminTabSettings')) document.getElementById('adminTabSettings').classList.add('hidden');
             if (document.getElementById('adminTabUsers')) document.getElementById('adminTabUsers').classList.add('hidden');
 
-            ['tabBtnLeaderboard', 'tabBtnQuizzes', 'tabBtnStudents', 'tabBtnSettings', 'tabBtnUsers'].forEach(btn => {
+            ['tabBtnLeaderboard', 'tabBtnQuizzes', 'tabBtnGrandQuiz', 'tabBtnStudents', 'tabBtnManual', 'tabBtnSettings', 'tabBtnUsers'].forEach(btn => {
                 const el = document.getElementById(btn);
-                if (el) el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0";
+                if (el) {
+                    if (btn === 'tabBtnGrandQuiz') {
+                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 hover:bg-amber-50 border border-amber-200 transition-all whitespace-nowrap flex-shrink-0";
+                    } else if (btn === 'tabBtnManual') {
+                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-200 transition-all whitespace-nowrap flex-shrink-0";
+                    } else {
+                        el.className = "px-3 py-2 text-xs font-bold rounded-lg bg-white text-slate-600 hover:bg-slate-100 transition-all whitespace-nowrap flex-shrink-0";
+                    }
+                }
             });
 
             const activeClass = "px-3 py-2 text-xs font-bold rounded-lg bg-brand-600 text-white shadow-sm transition-all whitespace-nowrap flex-shrink-0";
+            const activeGoldClass = "px-3 py-2 text-xs font-bold rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md transition-all whitespace-nowrap flex-shrink-0";
+            const activeIndigoClass = "px-3 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-md transition-all whitespace-nowrap flex-shrink-0";
 
             if (tab === 'leaderboard') {
-                document.getElementById('adminTabLeaderboard').classList.remove('hidden');
-                document.getElementById('tabBtnLeaderboard').className = activeClass;
+                if (document.getElementById('adminTabLeaderboard')) document.getElementById('adminTabLeaderboard').classList.remove('hidden');
+                if (document.getElementById('tabBtnLeaderboard')) document.getElementById('tabBtnLeaderboard').className = activeClass;
             } else if (tab === 'quizzes') {
-                document.getElementById('adminTabQuizzes').classList.remove('hidden');
-                document.getElementById('tabBtnQuizzes').className = activeClass;
+                if (document.getElementById('adminTabQuizzes')) document.getElementById('adminTabQuizzes').classList.remove('hidden');
+                if (document.getElementById('tabBtnQuizzes')) document.getElementById('tabBtnQuizzes').className = activeClass;
+            } else if (tab === 'grandquiz') {
+                if (document.getElementById('adminTabGrandQuiz')) document.getElementById('adminTabGrandQuiz').classList.remove('hidden');
+                if (document.getElementById('tabBtnGrandQuiz')) document.getElementById('tabBtnGrandQuiz').className = activeGoldClass;
+                renderAdminGrandQuizzes();
+                renderGrandLeaderboard();
             } else if (tab === 'students') {
-                document.getElementById('adminTabStudents').classList.remove('hidden');
-                document.getElementById('tabBtnStudents').className = activeClass;
+                if (document.getElementById('adminTabStudents')) document.getElementById('adminTabStudents').classList.remove('hidden');
+                if (document.getElementById('tabBtnStudents')) document.getElementById('tabBtnStudents').className = activeClass;
+            } else if (tab === 'manual') {
+                if (document.getElementById('adminTabManual')) document.getElementById('adminTabManual').classList.remove('hidden');
+                if (document.getElementById('tabBtnManual')) document.getElementById('tabBtnManual').className = activeIndigoClass;
+                populateManualParticipantsSelect();
+                updateManualEntryValidation();
             } else if (tab === 'settings') {
-                document.getElementById('adminTabSettings').classList.remove('hidden');
-                document.getElementById('tabBtnSettings').className = activeClass;
+                if (document.getElementById('adminTabSettings')) document.getElementById('adminTabSettings').classList.remove('hidden');
+                if (document.getElementById('tabBtnSettings')) document.getElementById('tabBtnSettings').className = activeClass;
                 document.getElementById('settingMadrasaName').value = appState.appSettings.madrasaName || appState.appSettings.madrasaname || '';
                 document.getElementById('settingSubtitle').value = appState.appSettings.eventSubtitle || appState.appSettings.eventsubtitle || '';
                 document.getElementById('settingAdminPasscode').value = appState.appSettings.adminPasscode || appState.appSettings.adminpasscode || '';
             } else if (tab === 'users') {
-                document.getElementById('adminTabUsers').classList.remove('hidden');
-                document.getElementById('tabBtnUsers').className = activeClass;
+                if (document.getElementById('adminTabUsers')) document.getElementById('adminTabUsers').classList.remove('hidden');
+                if (document.getElementById('tabBtnUsers')) document.getElementById('tabBtnUsers').className = activeClass;
                 renderRegisteredUsers();
             }
         }
@@ -3250,6 +3276,385 @@
             document.getElementById('quizFormModal').classList.remove('hidden');
         }
 
+        // ==========================================
+        // GRAND QUIZ MANAGEMENT FUNCTIONS
+        // ==========================================
+        function openGrandQuizModal() {
+            document.getElementById('grandQuizTitle').value = '';
+            document.getElementById('grandQuizDate').value = getTodayDateString();
+            document.getElementById('grandQuizCashAward').value = '500';
+            document.getElementById('grandQuizInitialQuestions').value = '10';
+            document.getElementById('grandQuizQuestionsContainer').innerHTML = '';
+            document.getElementById('grandQuizModalTitle').innerText = 'Create Grand Quiz';
+            autoAddGrandQuestions(10);
+            document.getElementById('grandQuizModal').classList.remove('hidden');
+        }
+
+        function closeGrandQuizModal() {
+            document.getElementById('grandQuizModal').classList.add('hidden');
+        }
+
+        function autoAddGrandQuestions(count) {
+            const num = parseInt(count, 10) || 1;
+            const container = document.getElementById('grandQuizQuestionsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < Math.min(num, 30); i++) {
+                addQuestionField('grandQuizQuestionsContainer');
+            }
+        }
+
+        async function handleSaveGrandQuiz(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (appState._quizSaveLock) { showToast('Saving in progress...', 'info'); return; }
+
+            const title = document.getElementById('grandQuizTitle').value.trim();
+            const date = document.getElementById('grandQuizDate').value;
+            const cashAward = parseInt(document.getElementById('grandQuizCashAward').value, 10) || 0;
+            const blocks = document.querySelectorAll('#grandQuizQuestionsContainer .question-block');
+
+            if (!title || !date) { showToast('Title and Date are required', 'error'); return; }
+            if (blocks.length === 0) { showToast('Please add at least one question', 'error'); return; }
+
+            const questions = [];
+            const timestampBase = Date.now();
+            for (let idx = 0; idx < blocks.length; idx++) {
+                const b = blocks[idx];
+                const textVal = b.querySelector('.q-text')?.value.trim();
+                if (!textVal) { showToast(`Question ${idx + 1} text is required`, 'error'); return; }
+                const opts = [
+                    b.querySelector('.q-opt-0')?.value.trim(),
+                    b.querySelector('.q-opt-1')?.value.trim(),
+                    b.querySelector('.q-opt-2')?.value.trim(),
+                    b.querySelector('.q-opt-3')?.value.trim()
+                ];
+                if (!opts[0] || !opts[1] || !opts[2] || !opts[3]) {
+                    showToast(`All 4 options required for Question ${idx + 1}`, 'error');
+                    return;
+                }
+                questions.push({
+                    id: `gq-${timestampBase}-${idx}`,
+                    text: textVal,
+                    options: opts,
+                    correctIndex: parseInt(b.querySelector('.q-correct')?.value || '0', 10) || 0,
+                    marks: 2
+                });
+            }
+
+            appState._quizSaveLock = true;
+            const existingIdx = appState.quizzes.findIndex(q => q.date === date);
+            const quizObj = {
+                id: existingIdx >= 0 ? appState.quizzes[existingIdx].id : `grandquiz-${timestampBase}`,
+                title: title,
+                date: date,
+                isGrandQuiz: true,
+                cashAward: cashAward,
+                questions: questions
+            };
+
+            if (existingIdx >= 0) appState.quizzes[existingIdx] = quizObj;
+            else appState.quizzes.push(quizObj);
+
+            await saveData();
+            appState._quizSaveLock = false;
+            closeGrandQuizModal();
+            renderAdminView();
+            updateFeaturedQuizBanner();
+            showToast(`Grand Quiz "${title}" saved successfully!`, 'success');
+        }
+
+        function renderAdminGrandQuizzes() {
+            const container = document.getElementById('grandQuizzesListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const grands = appState.quizzes.filter(q => q.isGrandQuiz);
+
+            if (grands.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center text-slate-400 py-10 text-xs">
+                        <i class="fa-solid fa-crown text-amber-300 text-3xl block mb-2"></i>
+                        No Grand Quizzes created yet. Click <span class="font-bold text-amber-600">"Create Grand Quiz"</span> above to create one.
+                    </div>`;
+                return;
+            }
+
+            grands.forEach(q => {
+                const div = document.createElement('div');
+                div.className = "bg-gradient-to-br from-amber-50 to-yellow-50/50 border-2 border-amber-300 rounded-xl p-4 shadow-sm space-y-3 relative";
+                div.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 mb-1">
+                                <i class="fa-solid fa-crown mr-1 text-amber-600"></i> Grand Quiz • ${q.date}
+                            </span>
+                            <h4 class="text-sm font-extrabold text-slate-900">${q.title}</h4>
+                            <p class="text-xs text-slate-600 mt-0.5">${q.questions.length} Questions • ${q.questions.length * 2} Marks</p>
+                        </div>
+                        ${q.cashAward ? `<div class="px-2.5 py-1 rounded-full bg-amber-400 text-amber-950 text-xs font-black shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-trophy"></i> ₹${q.cashAward} Award
+                        </div>` : ''}
+                    </div>
+                    <div class="flex items-center justify-end space-x-2 pt-2 border-t border-amber-200/80 text-xs">
+                        <button onclick="editGrandQuiz('${q.id}')" class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded hover:bg-amber-200">
+                            <i class="fa-solid fa-pen mr-1"></i> Edit
+                        </button>
+                        <button onclick="deleteQuiz('${q.id}')" class="px-2.5 py-1 bg-rose-100 text-rose-700 font-bold rounded hover:bg-rose-200">
+                            <i class="fa-solid fa-trash mr-1"></i> Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function editGrandQuiz(id) {
+            const quiz = appState.quizzes.find(q => q.id === id);
+            if (!quiz) return;
+            document.getElementById('grandQuizTitle').value = quiz.title;
+            document.getElementById('grandQuizDate').value = quiz.date;
+            document.getElementById('grandQuizCashAward').value = quiz.cashAward || 0;
+            document.getElementById('grandQuizInitialQuestions').value = quiz.questions.length;
+
+            const container = document.getElementById('grandQuizQuestionsContainer');
+            container.innerHTML = '';
+            quiz.questions.forEach((q, idx) => {
+                addQuestionField('grandQuizQuestionsContainer');
+                const block = container.children[idx];
+                if (block) {
+                    block.querySelector('.q-text').value = q.text;
+                    block.querySelector('.q-opt-0').value = q.options[0] || '';
+                    block.querySelector('.q-opt-1').value = q.options[1] || '';
+                    block.querySelector('.q-opt-2').value = q.options[2] || '';
+                    block.querySelector('.q-opt-3').value = q.options[3] || '';
+                    block.querySelector('.q-correct').value = q.correctIndex;
+                }
+            });
+            document.getElementById('grandQuizModalTitle').innerText = 'Edit Grand Quiz';
+            document.getElementById('grandQuizModal').classList.remove('hidden');
+        }
+
+        function renderGrandLeaderboard() {
+            const selectEl = document.getElementById('grandLeaderboardFilter');
+            const contentEl = document.getElementById('grandQuizLeaderboardContent');
+            if (!selectEl || !contentEl) return;
+
+            const grands = appState.quizzes.filter(q => q.isGrandQuiz);
+            const currVal = selectEl.value;
+            selectEl.innerHTML = `<option value="">-- Select a Grand Quiz --</option>`;
+            grands.forEach(g => {
+                selectEl.innerHTML += `<option value="${g.date}">${g.date} - ${g.title} ${g.cashAward ? `(Award: ₹${g.cashAward})` : ''}</option>`;
+            });
+            selectEl.value = currVal;
+
+            const selectedDate = selectEl.value;
+            if (!selectedDate) {
+                contentEl.innerHTML = `
+                    <div class="text-center text-slate-400 py-10 text-xs">
+                        <i class="fa-solid fa-medal text-slate-200 text-3xl block mb-2"></i>
+                        Select a Grand Quiz above to view rankings and declare the cash award winner.
+                    </div>`;
+                return;
+            }
+
+            const quiz = grands.find(g => g.date === selectedDate);
+            const subs = appState.submissions.filter(s => s.quizDate === selectedDate);
+            if (subs.length === 0) {
+                contentEl.innerHTML = `
+                    <div class="text-center text-amber-700 py-8 text-xs bg-amber-50 rounded-xl border border-amber-200">
+                        <i class="fa-solid fa-crown text-amber-400 text-2xl block mb-1"></i>
+                        No submissions recorded yet for Grand Quiz "${quiz ? quiz.title : selectedDate}".
+                    </div>`;
+                return;
+            }
+
+            const sorted = [...subs].sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return (a.timeTakenSeconds || 0) - (b.timeTakenSeconds || 0);
+            });
+
+            const topWinner = sorted[0];
+
+            let html = `
+                <div class="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-5 text-amber-950 shadow-md mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-14 h-14 rounded-full bg-white text-amber-600 flex items-center justify-center text-2xl font-black shadow-inner">
+                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold tracking-widest bg-amber-900 text-amber-100 px-2 py-0.5 rounded">1st Place Winner</span>
+                            <h4 class="text-lg font-black mt-0.5">${sanitizeDisplayName(topWinner.participantName)}</h4>
+                            <p class="text-xs text-amber-900 font-semibold">Phone: ${topWinner.participantPhone} • Score: ${topWinner.score}/${topWinner.totalPossible} • Time: ${topWinner.timeTakenSeconds || 0}s</p>
+                        </div>
+                    </div>
+                    ${quiz && quiz.cashAward ? `
+                        <button onclick="declareGrandQuizWinner('${quiz.id}', '${topWinner.participantPhone}', '${sanitizeDisplayName(topWinner.participantName)}', ${topWinner.score}, ${quiz.cashAward})"
+                            class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 rounded-xl text-xs font-extrabold shadow-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-award text-amber-400 text-base"></i>
+                            <span>Award ₹${quiz.cashAward} Cash Prize</span>
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                <th class="py-2.5 px-3">Rank</th>
+                                <th class="py-2.5 px-3">Participant Name</th>
+                                <th class="py-2.5 px-3">Phone</th>
+                                <th class="py-2.5 px-3">Score</th>
+                                <th class="py-2.5 px-3">Accuracy</th>
+                                <th class="py-2.5 px-3">Time Taken</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-xs">`;
+
+            sorted.forEach((s, idx) => {
+                const pct = s.totalPossible ? Math.round((s.score / s.totalPossible) * 100) : 0;
+                html += `
+                    <tr class="${idx === 0 ? 'bg-amber-50/60 font-bold' : ''}">
+                        <td class="py-2.5 px-3">
+                            ${idx === 0 ? '<span class="px-2 py-0.5 rounded bg-amber-400 text-amber-950 font-black text-[10px]">#1 WINNER</span>' : `#${idx + 1}`}
+                        </td>
+                        <td class="py-2.5 px-3 font-semibold text-slate-800">${sanitizeDisplayName(s.participantName)}</td>
+                        <td class="py-2.5 px-3 text-slate-600">${s.participantPhone}</td>
+                        <td class="py-2.5 px-3 font-bold text-brand-700">${s.score} / ${s.totalPossible}</td>
+                        <td class="py-2.5 px-3 font-semibold">${pct}%</td>
+                        <td class="py-2.5 px-3 text-slate-500">${s.timeTakenSeconds || 0}s</td>
+                    </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            contentEl.innerHTML = html;
+        }
+
+        function declareGrandQuizWinner(quizId, phone, name, score, prize) {
+            showToast(`🏆 Congratulations! ₹${prize} Cash Award declared for ${name} (${phone})!`, 'success');
+        }
+
+        // ==========================================
+        // MANUAL ENTRY FUNCTIONS
+        // ==========================================
+        function populateManualParticipantsSelect() {
+            const select = document.getElementById('manualEntryParticipantSelect');
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = `<option value="">-- Choose a registered participant --</option>`;
+
+            deduplicateParticipants();
+            const sorted = [...appState.participants].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            sorted.forEach(p => {
+                const norm = normalizePhone(p.phone);
+                if (!norm) return;
+                select.innerHTML += `<option value="${norm}">${sanitizeDisplayName(p.name)} (${norm})</option>`;
+            });
+            select.value = currentVal;
+
+            if (!select.dataset.listenerAttached) {
+                select.dataset.listenerAttached = 'true';
+                select.addEventListener('change', updateManualEntryValidation);
+                document.getElementById('manualEntryQuizDate')?.addEventListener('change', updateManualEntryValidation);
+                document.getElementById('manualEntryScore')?.addEventListener('input', updateManualEntryValidation);
+                document.getElementById('manualEntryTotalPossible')?.addEventListener('input', updateManualEntryValidation);
+            }
+        }
+
+        function updateManualEntryValidation() {
+            const phone = document.getElementById('manualEntryParticipantSelect')?.value;
+            const date = document.getElementById('manualEntryQuizDate')?.value;
+            const score = parseInt(document.getElementById('manualEntryScore')?.value || '0', 10);
+            const total = parseInt(document.getElementById('manualEntryTotalPossible')?.value || '1', 10);
+
+            const badge = document.getElementById('manualEntryValidationBadge');
+            const summary = document.getElementById('manualEntrySummaryLine');
+            if (!badge || !summary) return;
+
+            if (!phone || !date) {
+                badge.className = 'font-bold text-slate-400';
+                badge.innerText = 'Select participant & date →';
+                summary.innerText = 'Please select a participant and quiz date above.';
+                return;
+            }
+
+            const participant = appState.participants.find(p => normalizePhone(p.phone) === phone);
+            const pName = participant ? sanitizeDisplayName(participant.name) : phone;
+            const quiz = appState.quizzes.find(q => q.date === date);
+            const existingSub = appState.submissions.find(s => normalizePhone(s.participantPhone) === phone && s.quizDate === date);
+
+            const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+            let text = `Participant: ${pName} | Date: ${date} | Score: ${score}/${total} (${pct}%)`;
+
+            if (quiz) {
+                text += ` | Quiz Title: "${quiz.title}"`;
+            } else {
+                text += ` | Note: No quiz found on ${date} (manual standalone score).`;
+            }
+
+            if (existingSub) {
+                badge.className = 'font-bold text-amber-600';
+                badge.innerText = '⚠️ Updates existing submission';
+                text += `\nExisting submission found (Previous score: ${existingSub.score}/${existingSub.totalPossible}). Saving will overwrite this entry.`;
+            } else {
+                badge.className = 'font-bold text-emerald-600';
+                badge.innerText = '✓ Ready to add';
+            }
+
+            summary.innerText = text;
+        }
+
+        function resetManualEntryForm() {
+            if (document.getElementById('manualEntryParticipantSelect')) document.getElementById('manualEntryParticipantSelect').value = '';
+            if (document.getElementById('manualEntryQuizDate')) document.getElementById('manualEntryQuizDate').value = getTodayDateString();
+            if (document.getElementById('manualEntryScore')) document.getElementById('manualEntryScore').value = '2';
+            if (document.getElementById('manualEntryTotalPossible')) document.getElementById('manualEntryTotalPossible').value = '2';
+            if (document.getElementById('manualEntryTimeTaken')) document.getElementById('manualEntryTimeTaken').value = '10';
+            if (document.getElementById('manualEntryNotes')) document.getElementById('manualEntryNotes').value = '';
+            updateManualEntryValidation();
+        }
+
+        async function submitManualEntry() {
+            const phone = normalizePhone(document.getElementById('manualEntryParticipantSelect')?.value);
+            const date = document.getElementById('manualEntryQuizDate')?.value;
+            const score = parseInt(document.getElementById('manualEntryScore')?.value || '0', 10);
+            const total = parseInt(document.getElementById('manualEntryTotalPossible')?.value || '1', 10);
+            const timeTaken = parseInt(document.getElementById('manualEntryTimeTaken')?.value || '0', 10);
+            const notes = document.getElementById('manualEntryNotes')?.value.trim();
+
+            if (!phone) { showToast('Please select a participant', 'error'); return; }
+            if (!date) { showToast('Please select a quiz date', 'error'); return; }
+            if (score < 0 || total < 1 || score > total) {
+                showToast(`Invalid score (${score}/${total}). Score cannot exceed total possible.`, 'error');
+                return;
+            }
+
+            const participant = appState.participants.find(p => normalizePhone(p.phone) === phone);
+            const name = participant ? sanitizeDisplayName(participant.name) : 'Participant';
+            const quiz = appState.quizzes.find(q => q.date === date);
+
+            const subObj = {
+                id: `manual-sub-${phone}-${date}`,
+                participantName: name,
+                participantPhone: phone,
+                quizId: quiz ? quiz.id : `quiz-${date}`,
+                quizDate: date,
+                score: score,
+                totalPossible: total,
+                answers: {},
+                completedAt: new Date().toISOString(),
+                timeTakenSeconds: timeTaken,
+                isManualEntry: true,
+                adminNotes: notes
+            };
+
+            const existingIdx = appState.submissions.findIndex(s => normalizePhone(s.participantPhone) === phone && s.quizDate === date);
+            if (existingIdx >= 0) appState.submissions[existingIdx] = subObj;
+            else appState.submissions.push(subObj);
+
+            await saveData();
+            renderAdminView();
+            showToast(`Manual score (${score}/${total}) saved for ${name} on ${date}!`, 'success');
+        }
+
         function exportParticipantsData() {
             // Use deduped submissions in export (only 1 per phone + quiz date)
             const seen = {};
@@ -3385,48 +3790,95 @@
             return 'rose';
         }
 
-        function generateSubmissionsPdf(rows, targetDate) {
-            const doc = _buildPdfDoc(
-                'Daily Quiz Submissions Report',
-                'Participant quiz results filtered by quiz date',
-                targetDate,
-                rows.length
-            );
-            if (!doc) return false;
+        function openPrintableReportWindow(title, subtitle, targetDate, headers, rows) {
+            const madrasaName = _getMadrasaBrandName();
+            const eventSubtitle = _getEventSubtitle();
+            const win = window.open('', '_blank', 'width=900,height=800');
+            if (!win) {
+                showToast('Pop-up blocked! Please allow pop-ups to view PDF report.', 'error');
+                return false;
+            }
 
-            const totalScore = rows.reduce((a, s) => a + Number(s.score || 0), 0);
-            const totalPossible = rows.reduce((a, s) => a + Number(s.totalPossible || 0), 0);
-            const avgAccuracy = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
-            const passCount = rows.filter(s => Number(s.totalPossible || 0) > 0 && (Number(s.score) / Number(s.totalPossible)) >= 0.6).length;
-
-            const summaryY = 236;
-            const cardW = 124;
-            const cardH = 60;
-            const startX = 40;
-            const gap = 16;
-            doc.setDrawColor(226, 232, 240);
-            [
-                { title: 'Participants', value: String(rows.length), color: [16, 185, 129] },
-                { title: 'Total Score', value: totalScore + ' / ' + totalPossible, color: [5, 150, 105] },
-                { title: 'Avg Accuracy', value: avgAccuracy + '%', color: [245, 158, 11] },
-                { title: 'Passed (>=60%)', value: String(passCount) + ' (' + (rows.length ? Math.round((passCount / rows.length) * 100) : 0) + '%)', color: [217, 119, 6] }
-            ].forEach((c, i) => {
-                const x = startX + i * (cardW + gap);
-                doc.setFillColor(248, 250, 252);
-                doc.roundedRect(x, summaryY, cardW, cardH, 8, 8, 'F');
-                doc.setDrawColor(226, 232, 240);
-                doc.roundedRect(x, summaryY, cardW, cardH, 8, 8, 'S');
-                doc.setTextColor(c.color[0], c.color[1], c.color[2]);
-                doc.setFontSize(15);
-                doc.setFont('helvetica', 'bold');
-                doc.text(c.value, x + 14, summaryY + 34);
-                doc.setTextColor(100, 116, 139);
-                doc.setFontSize(8.5);
-                doc.setFont('helvetica', 'normal');
-                doc.text(c.title, x + 14, summaryY + 50);
+            let tableRowsHtml = '';
+            rows.forEach((r, idx) => {
+                tableRowsHtml += '<tr>';
+                r.forEach((cell, cIdx) => {
+                    tableRowsHtml += `<td style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-size:13px; ${cIdx===1?'font-weight:bold; color:#0f172a;':''}">${cell}</td>`;
+                });
+                tableRowsHtml += '</tr>';
             });
 
-            const bodyData = rows.map((s, i) => {
+            let headersHtml = '';
+            headers.forEach(h => {
+                headersHtml += `<th style="padding:12px; background:#064e3b; color:white; font-size:12px; text-align:left;">${h}</th>`;
+            });
+
+            win.document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${title} - ${targetDate}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Inter', 'Amiri', system-ui, -apple-system, sans-serif; padding: 30px; color: #0f172a; margin: 0; }
+                        .header-banner { background: linear-gradient(135deg, #064e3b 0%, #059669 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; }
+                        .header-banner h1 { margin: 0 0 6px 0; font-size: 24px; font-weight: 800; }
+                        .header-banner p { margin: 0; font-size: 13px; opacity: 0.9; }
+                        .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; display: flex; gap: 24px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        tr:nth-child(even) { background: #f8fafc; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #94a3b8; border-t: 1px solid #e2e8f0; padding-top: 15px; }
+                        @media print {
+                            .no-print { display: none !important; }
+                            body { padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">
+                            🖨️ Save as PDF / Print
+                        </button>
+                    </div>
+
+                    <div class="header-banner">
+                        <h1>${madrasaName}</h1>
+                        <p>${eventSubtitle} • ${title}</p>
+                    </div>
+
+                    <div class="meta-box">
+                        <div><strong>Report Date:</strong> ${targetDate}</div>
+                        <div><strong>Total Records:</strong> ${rows.length}</div>
+                        <div><strong>Generated:</strong> ${new Date().toLocaleString()}</div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>${headersHtml}</tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+
+                    <div class="footer">
+                        ${madrasaName} • ${eventSubtitle} • Official Report
+                    </div>
+
+                    <script>
+                        setTimeout(function() { window.print(); }, 500);
+                    </script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            return true;
+        }
+
+        function generateSubmissionsPdf(rows, targetDate) {
+            const headers = ['#', 'Participant Name', 'Phone', 'Quiz Date', 'Score', 'Accuracy', 'Time', 'Submitted'];
+            const dataRows = rows.map((s, i) => {
                 const score = Number(s.score || 0);
                 const total = Number(s.totalPossible || 0);
                 const acc = total ? Math.round((score / total) * 100) + '%' : '-';
@@ -3435,7 +3887,7 @@
                 const timeTaken = mins ? `${mins}m ${String(secs).padStart(2, '0')}s` : `${s.timeTakenSeconds || 0}s`;
                 return [
                     String(i + 1),
-                    pdfSafeText(s.participantName || ''),
+                    sanitizeDisplayName(s.participantName || ''),
                     String(s.participantPhone || ''),
                     s.quizDate || '',
                     `${score} / ${total}`,
@@ -3445,108 +3897,30 @@
                 ];
             });
 
-            doc.autoTable({
-                startY: summaryY + 88,
-                head: [['#', 'Participant Name', 'Phone', 'Quiz Date', 'Score', 'Accuracy', 'Time', 'Submitted']],
-                body: bodyData,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 5, lineColor: [226, 232, 240], lineWidth: 0.4, textColor: [30, 41, 59] },
-                headStyles: {
-                    fillColor: [6, 78, 59],
-                    textColor: 255,
-                    fontSize: 8.5,
-                    fontStyle: 'bold',
-                    halign: 'center',
-                    valign: 'middle'
-                },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 22 },
-                    1: { fontStyle: 'bold', cellWidth: 'auto' },
-                    2: { halign: 'center', font: 'courier', cellWidth: 70 },
-                    3: { halign: 'center', cellWidth: 62 },
-                    4: { halign: 'center', cellWidth: 58 },
-                    5: { halign: 'center', cellWidth: 54 },
-                    6: { halign: 'center', cellWidth: 48 },
-                    7: { halign: 'center', cellWidth: 58 }
-                },
-                margin: { left: 40, right: 40 },
-                didParseCell: function (data) {
-                    if (data.section === 'body' && data.column.index === 5) {
-                        const txt = String(data.cell.raw);
-                        const pct = parseInt(txt, 10);
-                        if (!isNaN(pct)) {
-                            if (pct >= 80) { data.cell.styles.textColor = [5, 150, 105]; data.cell.styles.fontStyle = 'bold'; }
-                            else if (pct >= 60) { data.cell.styles.textColor = [217, 119, 6]; data.cell.styles.fontStyle = 'bold'; }
-                            else { data.cell.styles.textColor = [225, 29, 72]; data.cell.styles.fontStyle = 'bold'; }
-                        }
-                    }
-                }
-            });
+            // Open exact Unicode native script PDF Report Window
+            const htmlOk = openPrintableReportWindow('Daily Quiz Submissions Report', 'Participant quiz results filtered by quiz date', targetDate, headers, dataRows);
+            if (htmlOk) return true;
 
+            const doc = _buildPdfDoc('Daily Quiz Submissions Report', 'Participant quiz results filtered by quiz date', targetDate, rows.length);
+            if (!doc) return false;
             return _finalizePdf(doc, `seerah_quiz_submissions_${targetDate}.pdf`);
         }
 
         function generateParticipantsPdf(rows, targetDate) {
-            const doc = _buildPdfDoc(
-                'Registered Participants Report',
-                'New participant registrations filtered by signup date',
-                targetDate,
-                rows.length
-            );
-            if (!doc) return false;
-
-            const summaryY = 236;
-            const cardW = 170;
-            doc.setFillColor(248, 250, 252);
-            doc.setDrawColor(226, 232, 240);
-            doc.roundedRect(40, summaryY, cardW, 60, 8, 8, 'F');
-            doc.roundedRect(40, summaryY, cardW, 60, 8, 8, 'S');
-            doc.roundedRect(40 + cardW + 16, summaryY, cardW, 60, 8, 8, 'F');
-            doc.roundedRect(40 + cardW + 16, summaryY, cardW, 60, 8, 8, 'S');
-            doc.setTextColor(16, 185, 129);
-            doc.setFontSize(15);
-            doc.setFont('helvetica', 'bold');
-            doc.text(String(rows.length), 56, summaryY + 34);
-            doc.setTextColor(245, 158, 11);
-            doc.text(String(new Set(rows.map(r => (r.phone || '').toString())).size), 56 + cardW + 16, summaryY + 34);
-            doc.setTextColor(100, 116, 139);
-            doc.setFontSize(8.5);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Total New Registrations', 56, summaryY + 50);
-            doc.text('Unique Phone Numbers', 56 + cardW + 16, summaryY + 50);
-
-            const bodyData = rows.map((p, i) => [
+            const headers = ['#', 'Participant Name', 'Phone Number', 'Registered At'];
+            const dataRows = rows.map((p, i) => [
                 String(i + 1),
-                pdfSafeText(p.name || ''),
+                sanitizeDisplayName(p.name || ''),
                 String(p.phone || ''),
                 p.created_at ? new Date(p.created_at).toLocaleString() : '-'
             ]);
 
-            doc.autoTable({
-                startY: summaryY + 88,
-                head: [['#', 'Participant Name', 'Phone Number', 'Registered At']],
-                body: bodyData,
-                theme: 'grid',
-                styles: { fontSize: 9, cellPadding: 6, lineColor: [226, 232, 240], lineWidth: 0.4, textColor: [30, 41, 59] },
-                headStyles: {
-                    fillColor: [6, 78, 59],
-                    textColor: 255,
-                    fontSize: 9.5,
-                    fontStyle: 'bold',
-                    halign: 'center',
-                    valign: 'middle'
-                },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 28 },
-                    1: { fontStyle: 'bold', cellWidth: 'auto' },
-                    2: { halign: 'center', font: 'courier', cellWidth: 90 },
-                    3: { halign: 'center', cellWidth: 110 }
-                },
-                margin: { left: 40, right: 40 }
-            });
+            // Open exact Unicode native script PDF Report Window
+            const htmlOk = openPrintableReportWindow('Registered Participants Report', 'New participant registrations filtered by signup date', targetDate, headers, dataRows);
+            if (htmlOk) return true;
 
+            const doc = _buildPdfDoc('Registered Participants Report', 'New participant registrations filtered by signup date', targetDate, rows.length);
+            if (!doc) return false;
             return _finalizePdf(doc, `madrasa_registered_users_${targetDate}.pdf`);
         }
 
