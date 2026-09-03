@@ -1006,9 +1006,9 @@
 
         <!-- Modal: Add / Edit Daily Quiz -->
         <div id="quizFormModal"
-            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-3xl w-[95%] sm:w-full p-4 sm:p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto relative">
                 <button onclick="closeCreateQuizModal()"
                     class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
                     <i class="fa-solid fa-xmark"></i>
@@ -1065,9 +1065,9 @@
 
         <!-- Modal: Create / Edit Grand Quiz -->
         <div id="grandQuizModal"
-            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border-2 border-amber-300 max-h-[90vh] overflow-y-auto relative">
+                class="bg-white rounded-2xl max-w-3xl w-[95%] sm:w-full p-4 sm:p-6 shadow-2xl border-2 border-amber-300 max-h-[90vh] overflow-y-auto relative">
                 <button onclick="closeGrandQuizModal()"
                     class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
                     <i class="fa-solid fa-xmark"></i>
@@ -1179,9 +1179,9 @@
 
         <!-- Modal: Coming Soon Countdown Popup -->
         <div id="comingSoonModal"
-            class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-6 overflow-hidden">
+                class="bg-white rounded-3xl max-w-lg w-[95%] sm:w-full p-5 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-5 sm:space-y-6 max-h-[90vh] overflow-y-auto">
                 <!-- Decorative background elements -->
                 <div class="absolute -top-12 -right-12 w-36 h-36 bg-amber-400/20 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -1196,27 +1196,27 @@
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         <span id="csModalBadge">Quiz Status: Coming Soon</span>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-900 tracking-tight" id="csModalTitle">Grand Quiz Title</h3>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight" id="csModalTitle">Grand Quiz Title</h3>
                     <p class="text-xs font-medium text-slate-500" id="csModalSubtitle">Starts on scheduled date</p>
                 </div>
 
                 <!-- Live Countdown Grid -->
-                <div class="grid grid-cols-4 gap-2 sm:gap-3 bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-inner">
+                <div class="grid grid-cols-4 gap-2 sm:gap-3 bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-inner">
                     <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
-                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csDays">00</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Days</div>
+                        <div class="text-xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csDays">00</div>
+                        <div class="text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Days</div>
                     </div>
                     <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
-                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csHours">00</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Hours</div>
+                        <div class="text-xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csHours">00</div>
+                        <div class="text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Hours</div>
                     </div>
                     <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
-                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csMins">00</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Mins</div>
+                        <div class="text-xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider" id="csMins">00</div>
+                        <div class="text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Mins</div>
                     </div>
                     <div class="bg-slate-800/90 rounded-xl p-2 sm:p-3 text-center border border-slate-700/50">
-                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider animate-pulse" id="csSecs">00</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Secs</div>
+                        <div class="text-xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider animate-pulse" id="csSecs">00</div>
+                        <div class="text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Secs</div>
                     </div>
                 </div>
 
@@ -1229,28 +1229,28 @@
                     <div class="grid grid-cols-3 gap-2">
                         <!-- 1st Prize Card -->
                         <div id="prizeCard1" class="bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-950 p-2.5 rounded-xl text-center shadow-md border border-amber-300 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
-                            <div class="text-xl">🥇</div>
-                            <div class="text-[10px] font-black uppercase tracking-wider">1st Prize</div>
-                            <div class="text-sm font-black mt-0.5" id="csPrize1Val">₹500</div>
+                            <div class="text-lg sm:text-xl">🥇</div>
+                            <div class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">1st Prize</div>
+                            <div class="text-xs sm:text-sm font-black mt-0.5" id="csPrize1Val">₹500</div>
                         </div>
                         <!-- 2nd Prize Card -->
                         <div id="prizeCard2" class="bg-gradient-to-b from-slate-200 via-slate-100 to-slate-300 text-slate-800 p-2.5 rounded-xl text-center shadow-md border border-slate-300 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
-                            <div class="text-xl">🥈</div>
-                            <div class="text-[10px] font-black uppercase tracking-wider">2nd Prize</div>
-                            <div class="text-sm font-black mt-0.5" id="csPrize2Val">₹300</div>
+                            <div class="text-lg sm:text-xl">🥈</div>
+                            <div class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">2nd Prize</div>
+                            <div class="text-xs sm:text-sm font-black mt-0.5" id="csPrize2Val">₹300</div>
                         </div>
                         <!-- 3rd Prize Card -->
                         <div id="prizeCard3" class="bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-100 p-2.5 rounded-xl text-center shadow-md border border-amber-600 transform transition-all duration-500 opacity-0 scale-90 translate-y-4">
-                            <div class="text-xl">🥉</div>
-                            <div class="text-[10px] font-black uppercase tracking-wider">3rd Prize</div>
-                            <div class="text-sm font-black mt-0.5" id="csPrize3Val">₹200</div>
+                            <div class="text-lg sm:text-xl">🥉</div>
+                            <div class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">3rd Prize</div>
+                            <div class="text-xs sm:text-sm font-black mt-0.5" id="csPrize3Val">₹200</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-amber-900 font-medium flex items-center justify-between gap-2">
-                    <span class="truncate"><i class="fa-solid fa-link text-amber-600 mr-1.5"></i>Share link with participants:</span>
-                    <button onclick="copyComingSoonQuizLink()" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow transition-all whitespace-nowrap">
+                <div class="bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-amber-900 font-medium flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <span class="truncate text-center sm:text-left"><i class="fa-solid fa-link text-amber-600 mr-1.5"></i>Share link with participants:</span>
+                    <button onclick="copyComingSoonQuizLink()" class="w-full sm:w-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow transition-all whitespace-nowrap">
                         <i class="fa-solid fa-copy mr-1"></i>Copy Link
                     </button>
                 </div>
@@ -1264,9 +1264,9 @@
 
         <!-- Modal: The Quiz Finale Winner Declaration Popup -->
         <div id="quizFinaleModal"
-            class="fixed inset-0 z-[90] hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            class="fixed inset-0 z-[90] hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-gradient-to-b from-slate-900 via-slate-800 to-amber-950 text-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-6 overflow-hidden">
+                class="bg-gradient-to-b from-slate-900 via-slate-800 to-amber-950 text-white rounded-3xl max-w-lg w-[95%] sm:w-full p-5 sm:p-8 shadow-2xl border-2 border-amber-400 relative text-center space-y-5 sm:space-y-6 max-h-[90vh] overflow-y-auto">
                 <!-- Background Glowing Orbs -->
                 <div class="absolute -top-16 -right-16 w-44 h-44 bg-amber-400/20 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -bottom-16 -left-16 w-44 h-44 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -1324,9 +1324,9 @@
 
         <!-- Modal: Admin Passcode Login -->
         <div id="adminAuthModal"
-            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 relative text-center space-y-4">
+                class="bg-white rounded-2xl max-w-sm w-[92%] sm:w-full p-5 sm:p-6 shadow-2xl border border-slate-100 relative text-center space-y-4 max-h-[90vh] overflow-y-auto">
                 <div
                     class="w-12 h-12 rounded-full bg-slate-100 text-slate-800 mx-auto flex items-center justify-center text-xl">
                     <i class="fa-solid fa-lock"></i>
@@ -1354,9 +1354,9 @@
 
         <!-- Modal: Export Data By Date -->
         <div id="dateExportModal"
-            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
             <div
-                class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative space-y-5">
+                class="bg-white rounded-2xl max-w-md w-[92%] sm:w-full p-5 sm:p-6 shadow-2xl border border-slate-100 relative space-y-5 max-h-[90vh] overflow-y-auto">
                 <button onclick="closeDateExportModal()"
                     class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
                     <i class="fa-solid fa-xmark"></i>
