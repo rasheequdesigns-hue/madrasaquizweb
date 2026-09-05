@@ -117,41 +117,38 @@
 
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
-                <div
-                    class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 flex items-center justify-center text-amber-300 shadow-lg shadow-emerald-900/30 border-2 border-emerald-400/40">
-                    <i class="fa-solid fa-mosque text-xl"></i>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0" onclick="switchView('home')">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 flex items-center justify-center text-amber-300 shadow-lg shadow-emerald-900/30 border-2 border-emerald-400/40 flex-shrink-0">
+                    <i class="fa-solid fa-mosque text-lg sm:text-xl"></i>
                 </div>
-                <div>
-                    <span class="text-xl font-extrabold text-slate-900 tracking-tight"><span class="dyn-madrasa-1">Parammal</span> <span class="text-brand-600 dyn-madrasa-2">Madrasa</span></span>
-                    <span class="dyn-subtitle hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Rabee'ul Awwal Special</span>
+                <div class="min-w-0">
+                    <span class="text-base sm:text-xl font-extrabold text-slate-900 tracking-tight truncate block"><span class="dyn-madrasa-1">Parammal</span> <span class="text-brand-600 dyn-madrasa-2">Madrasa</span></span>
+                    <span class="dyn-subtitle hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Rabee'ul Awwal Special</span>
                 </div>
             </div>
 
             <!-- Header Action Controls -->
-            <div class="flex items-center space-x-2 sm:space-x-4">
-
-
+            <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                 <!-- Current User Profile Link Button -->
-                <div id="userInfoHeader" class="hidden flex items-center space-x-2">
+                <div id="userInfoHeader" class="hidden flex items-center gap-1.5">
                     <button onclick="switchView('studentDashboard')"
-                        class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border-2 border-emerald-300 hover:bg-emerald-100 transition-all shadow-sm">
-                        <i class="fa-solid fa-circle-user text-emerald-600 text-base"></i>
-                        <span class="text-xs font-extrabold" id="userHeaderName">Participant Profile</span>
+                        class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-900 border-2 border-emerald-300 hover:bg-emerald-100 transition-all shadow-sm min-h-[40px]">
+                        <i class="fa-solid fa-circle-user text-emerald-600 text-base flex-shrink-0"></i>
+                        <span class="text-xs font-extrabold hidden sm:inline max-w-[80px] truncate" id="userHeaderName">Profile</span>
                     </button>
                     <button onclick="logoutParticipant()" title="Logout"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 text-xs font-extrabold transition-all shadow-sm">
+                        class="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 text-xs font-extrabold transition-all shadow-sm min-h-[40px]">
                         <i class="fa-solid fa-right-from-bracket text-rose-600 text-sm"></i>
-                        <span>Logout</span>
+                        <span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
 
                 <!-- Admin Mode Toggle Button -->
                 <button id="navAdminBtn" onclick="openAdminAuth()"
-                    class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center space-x-1.5">
+                    class="px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-sm flex items-center gap-1.5 min-h-[40px]">
                     <i class="fa-solid fa-user-shield text-amber-400"></i>
-                    <span id="navAdminBtnText">Admin Access</span>
+                    <span id="navAdminBtnText" class="hidden xs:inline sm:inline">Admin</span>
                 </button>
             </div>
         </div>
@@ -173,12 +170,12 @@
         <section id="viewHome" class="max-w-3xl mx-auto space-y-6">
             <!-- Hero Header Card -->
             <div class="text-center space-y-3 py-4">
-                <div class="text-2xl font-bold text-emerald-800 arabic-font">
+                <div class="text-xl sm:text-2xl font-bold text-emerald-800 arabic-font break-words">
                     بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
                 </div>
                 <span
-                    class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                    <i class="fa-solid fa-star-and-crescent mr-1.5 text-amber-600"></i> <span class="dyn-subtitle">Rabee'ul Awwal Seerah Quiz Series</span> • <span class="dyn-madrasa-full">Parammal Madrasa</span>
+                    class="inline-flex flex-wrap items-center justify-center px-3.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 gap-1 text-center">
+                    <i class="fa-solid fa-star-and-crescent text-amber-600"></i> <span class="dyn-subtitle">Rabee'ul Awwal Seerah Quiz Series</span> <span>•</span> <span class="dyn-madrasa-full">Parammal Madrasa</span>
                 </span>
                 <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                     Prophet Muhammad <span class="text-brand-600">ﷺ</span> Seerah Competition
