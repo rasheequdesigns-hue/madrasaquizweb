@@ -1924,8 +1924,12 @@
         function checkLoginSection() {
             const loginForm   = document.getElementById('loginFormSection');
             const welcomeBack = document.getElementById('welcomeBackSection');
-            // During makeup sessions the normal login/welcome sections stay hidden
-            if (appState.isMakeupSession) return;
+            // During makeup sessions the normal login/welcome sections stay hidden — never override
+            if (appState.isMakeupSession) {
+                if (loginForm)   loginForm.classList.add('hidden');
+                if (welcomeBack) welcomeBack.classList.add('hidden');
+                return;
+            }
             if (appState.currentStudent) {
                 const normCurrentPhone = normalizePhone(appState.currentStudent.phone);
                 const deleted = getDeletedParticipants();
@@ -1978,6 +1982,25 @@
                     updateHeaderUserInfo();
                 } catch(e) {}
             }
+
+            // ── Detect makeup session EARLY (before loadData) ────────────
+            // This ensures isMakeupSession is set before checkLoginSection
+            // or updateFeaturedQuizBanner can run and show the wrong UI.
+            const _earlyParams = new URLSearchParams(window.location.search);
+            const _earlyIsMakeup = _earlyParams.get('makeup') === '1';
+            if (_earlyIsMakeup) {
+                appState.isMakeupSession = true;
+                appState.selectedQuizId  = _earlyParams.get('id') || _earlyParams.get('quizId') || null;
+                // Immediately hide conflicting sections
+                const _lf = document.getElementById('loginFormSection');
+                const _wb = document.getElementById('welcomeBackSection');
+                const _ql = document.getElementById('homeQuizzesList');
+                if (_lf) _lf.classList.add('hidden');
+                if (_wb) _wb.classList.add('hidden');
+                if (_ql) _ql.classList.add('hidden');
+            }
+            // ── End early detection ───────────────────────────────────────
+
             // Set today's date into date inputs
             const todayStr = getTodayDateString();
             document.getElementById('inputQuizDate').value = todayStr;
@@ -2009,7 +2032,8 @@
 
                 if (targetQuiz) {
                     document.getElementById('inputQuizDate').value = targetQuiz.date;
-                    // Hide normal login / welcome-back sections entirely
+
+                    // Re-enforce hide (loadData may have triggered renders that un-hid things)
                     const loginForm   = document.getElementById('loginFormSection');
                     const welcomeBack = document.getElementById('welcomeBackSection');
                     const quizList    = document.getElementById('homeQuizzesList');
@@ -2018,10 +2042,10 @@
                     if (quizList)    quizList.classList.add('hidden');
 
                     // Populate quiz info into both steps
-                    const allSorted = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
-                    const qNum = allSorted.findIndex(q => q.id === targetQuiz.id) + 1;
+                    const allSorted  = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
+                    const qNum       = allSorted.findIndex(q => q.id === targetQuiz.id) + 1;
                     const totalMarks = targetQuiz.questions.reduce((s, q) => s + (q.marks || 2), 0);
-                    const qLabel = `Quiz ${qNum}: ${targetQuiz.title}`;
+                    const qLabel     = `Quiz ${qNum}: ${targetQuiz.title}`;
 
                     ['makeupS1QuizTitle','makeupS2QuizTitle','makeupS2QuizTitleBody'].forEach(id => {
                         const el = document.getElementById(id);
@@ -2032,7 +2056,7 @@
                         if (el) el.innerText = targetQuiz.date;
                     });
                     const qCountEl = document.getElementById('makeupS2QuizQCount');
-                    if (qCountEl) qCountEl.innerText = `${targetQuiz.questions.length} Questions`;
+                    if (qCountEl) qCountEl.innerText = `${targetQuiz.questions.length} Question${targetQuiz.questions.length !== 1 ? 's' : ''}`;
                     const qMarksEl = document.getElementById('makeupS2QuizMarks');
                     if (qMarksEl) qMarksEl.innerText = `${totalMarks} Total Marks`;
 
@@ -2040,21 +2064,22 @@
                     const flow = document.getElementById('makeupQuizFlow');
                     if (flow) flow.classList.remove('hidden');
 
-                    // If user is already logged in → skip step 1, go straight to step 2
+                    // If user is already logged in → skip Step 1, go straight to Step 2
                     if (appState.currentStudent) {
                         showMakeupStep2(appState.currentStudent.name, appState.currentStudent.phone);
                     } else {
                         showMakeupStep(1);
                     }
                 } else {
-                    // Quiz not found — show normal login
-                    showToast(`Quiz not found for this makeup link.`, 'error');
+                    // Quiz not found — fall back to normal login
+                    appState.isMakeupSession = false;
+                    showToast('Quiz not found for this makeup link.', 'error');
                 }
             } else if (dateParam) {
                 showToast(`Loaded question link for date: ${dateParam}`, 'info');
             }
 
-            // Populate today's banner info
+            // Populate today's banner info (skipped automatically if isMakeupSession)
             updateFeaturedQuizBanner();
         };
 
@@ -2472,12 +2497,15 @@
         }
 
         function updateFeaturedQuizBanner() {
+            // Don't render the quiz list during makeup sessions — it would show over the makeup flow
+            if (appState.isMakeupSession) return;
             renderHomeQuizzesList();
         }
 
         
         
         function renderHomeQuizzesList() {
+            if (appState.isMakeupSession) return;
             const container = document.getElementById('homeQuizzesList');
             if(!container) return;
             container.innerHTML = '';
