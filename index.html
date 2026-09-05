@@ -190,6 +190,25 @@
             </div>
 
             <!-- Participant Registration Form Card -->
+            <!-- MAKEUP QUIZ BANNER — shown only when ?makeup=1 is in the URL -->
+            <div id="makeupQuizBanner" class="hidden bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-5 text-white shadow-xl border border-violet-400/30 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold">Makeup Quiz Access</h3>
+                        <p class="text-xs text-violet-200 mt-0.5" id="makeupBannerSubtitle">You have been given access to attempt a previous quiz.</p>
+                    </div>
+                </div>
+                <div class="bg-white/10 rounded-xl p-3 space-y-1">
+                    <div class="text-xs font-bold text-violet-100 uppercase tracking-wider">Quiz Details</div>
+                    <div class="text-sm font-extrabold" id="makeupBannerQuizTitle">Loading…</div>
+                    <div class="text-xs text-violet-200" id="makeupBannerQuizDate">Date: —</div>
+                </div>
+                <p class="text-[11px] text-violet-200">Enter your name and phone number below and click <strong class="text-white">"Attempt Selected Quiz"</strong> to submit your answers. Your result will be recorded under the original quiz date.</p>
+            </div>
+
             <div id="loginFormSection">
                 <div id="participantAuthCard"
                 class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-emerald-100 space-y-5 relative overflow-hidden">
@@ -682,14 +701,69 @@
             </div>
 
             <!-- TAB 2: DAILY QUIZZES & SHAREABLE LINKS -->
-            <div id="adminTabQuizzes" class="hidden space-y-4">
-                <div class="flex items-center justify-between">
+            <div id="adminTabQuizzes" class="hidden space-y-5">
+                <!-- Top toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
                     <h3 class="text-sm font-bold text-slate-900">Configured Daily Questions</h3>
                     <button onclick="openCreateQuizModal()"
-                        class="px-3.5 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700">
-                        <i class="fa-solid fa-plus mr-1"></i> New Daily Quiz
+                        class="px-3.5 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> New Daily Quiz
                     </button>
                 </div>
+
+                <!-- ── MAKEUP QUIZ LINK GENERATOR ─────────────────────── -->
+                <div class="bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-white text-lg flex-shrink-0 shadow-md">
+                            <i class="fa-solid fa-link"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-extrabold text-slate-900">Makeup Quiz Link Generator</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">Generate a special link for participants who missed a quiz. They can submit their answers and the result will be saved under that quiz date automatically.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Select Quiz Date</label>
+                            <select id="makeupQuizSelect" onchange="previewMakeupLink()"
+                                class="w-full px-3 py-2.5 text-sm rounded-xl border border-violet-300 focus:ring-2 focus:ring-violet-500 focus:outline-none bg-white">
+                                <option value="">-- Choose a quiz --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Generated Makeup Link</label>
+                            <div class="flex items-center gap-2 bg-white border border-violet-200 rounded-xl px-3 py-2.5 min-h-[42px]">
+                                <i class="fa-solid fa-link text-violet-400 text-xs flex-shrink-0"></i>
+                                <span id="makeupLinkPreview" class="text-[11px] text-slate-500 truncate flex-1 font-mono italic">Select a quiz above…</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="makeupQuizPreviewBox" class="hidden bg-white border border-violet-100 rounded-xl p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700" id="makeupPreviewTitle">—</span>
+                            <span class="text-[10px] bg-violet-100 text-violet-700 font-bold px-2 py-0.5 rounded-full" id="makeupPreviewDate">—</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500" id="makeupPreviewQCount">— questions</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="copyMakeupLink()" id="makeupCopyBtn" disabled
+                            class="flex-1 sm:flex-none px-5 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-copy"></i> Copy Makeup Link
+                        </button>
+                        <button onclick="shareMakeupLink()" id="makeupShareBtn" disabled
+                            class="flex-1 sm:flex-none px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-share-nodes"></i> Share via WhatsApp
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-violet-600 font-semibold flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        The makeup link will open the quiz for that specific date. Even if the participant already attempted it, this link lets them submit once more and it will be saved under the original quiz date.
+                    </p>
+                </div>
+                <!-- ── END MAKEUP SECTION ──────────────────────────────── -->
 
                 <div id="adminQuizzesList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Dynamic Quizzes Cards -->
@@ -1766,12 +1840,33 @@
             // Check if URL has share link parameters (e.g. ?date=2026-08-16&quizId=xyz)
             const urlParams = new URLSearchParams(window.location.search);
             const dateParam = urlParams.get('date') || urlParams.get('quizDate');
-            const idParam = urlParams.get('id') || urlParams.get('quizId');
-            if (idParam) {
-                appState.selectedQuizId = idParam;
-            }
+            const idParam   = urlParams.get('id')   || urlParams.get('quizId');
+            const isMakeup  = urlParams.get('makeup') === '1';
+
+            if (idParam)   appState.selectedQuizId  = idParam;
+            if (isMakeup)  appState.isMakeupSession  = true;
+
             if (dateParam) {
                 document.getElementById('inputQuizDate').value = dateParam;
+            }
+
+            // If this is a makeup link — show the banner and pre-populate the date
+            if (isMakeup && (idParam || dateParam)) {
+                const targetQuiz = idParam
+                    ? appState.quizzes.find(q => q.id === idParam)
+                    : appState.quizzes.find(q => q.date === dateParam);
+
+                const banner = document.getElementById('makeupQuizBanner');
+                if (banner && targetQuiz) {
+                    document.getElementById('makeupBannerQuizTitle').innerText = targetQuiz.title;
+                    document.getElementById('makeupBannerQuizDate').innerText  = `Date: ${targetQuiz.date}`;
+                    document.getElementById('makeupBannerSubtitle').innerText  =
+                        `You have been given access to attempt the quiz for ${targetQuiz.date}.`;
+                    document.getElementById('inputQuizDate').value = targetQuiz.date;
+                    banner.classList.remove('hidden');
+                }
+                showToast(`Makeup quiz loaded for: ${targetQuiz ? targetQuiz.date : dateParam}`, 'info');
+            } else if (dateParam) {
                 showToast(`Loaded question link for date: ${dateParam}`, 'info');
             }
 
@@ -2372,6 +2467,20 @@
             const existingSub = appState.submissions.find(s =>
                 normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === quizDate)
             );
+
+            // Makeup session: allow resubmission — remove old record first
+            if (existingSub && appState.isMakeupSession) {
+                showToast('Makeup mode: previous submission will be replaced with your new answers.', 'info');
+                appState.submissions = appState.submissions.filter(s => s.id !== existingSub.id);
+                if (appState.isLiveSupabase && appState.supabaseClient) {
+                    try {
+                        await appState.supabaseClient.from('submissions').delete().eq('id', existingSub.id);
+                    } catch(e) { console.warn('Could not delete old makeup submission from DB:', e); }
+                }
+                startQuiz(quiz);
+                return;
+            }
+
             if (existingSub) {
                 showToast('You have already submitted answers for this quiz. Opening your profile to review.', 'info');
                 appState.selectedReviewQuizId = quiz.id;
@@ -2459,6 +2568,21 @@
             const existingSub = appState.submissions.find(s =>
                 normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === dateSelected)
             );
+
+            // Makeup session: participant is allowed to resubmit; old submission is replaced
+            if (existingSub && appState.isMakeupSession) {
+                showToast('Makeup mode: previous submission will be replaced with your new answers.', 'info');
+                // Remove the old submission so the new one saves cleanly
+                appState.submissions = appState.submissions.filter(s => s.id !== existingSub.id);
+                if (appState.isLiveSupabase && appState.supabaseClient) {
+                    try {
+                        await appState.supabaseClient.from('submissions').delete().eq('id', existingSub.id);
+                    } catch(e) { console.warn('Could not delete old makeup submission from DB:', e); }
+                }
+                startQuiz(quiz);
+                return;
+            }
+
             if (existingSub) {
                 showToast('You have already submitted answers for this quiz. Opening your profile history.', 'info');
                 appState.selectedReviewQuizId = quiz.id;
@@ -2625,13 +2749,30 @@
             document.getElementById('studentAvatarLetter').innerText = (appState.currentStudent.name || 'P').charAt(0).toUpperCase();
 
             // --- Build a deduped map of this participant's submissions keyed by quizDate ---
-            // If someone somehow submitted twice for the same date, keep only the earliest.
+            // Match by phone. For each submission we determine the canonical quizDate:
+            //   - If sub.quizDate is set, use it directly
+            //   - Otherwise look up by quizId to get the date from the quiz object
+            // If two submissions share the same quizDate, keep only the earliest.
             const subByDate = {};
             appState.submissions
                 .filter(s => normalizePhone(s.participantPhone) === phone)
                 .sort((a, b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0))
                 .forEach(s => {
-                    if (!subByDate[s.quizDate]) subByDate[s.quizDate] = s;
+                    // Resolve the quizDate — prefer stored value, fall back to quiz lookup
+                    let resolvedDate = s.quizDate;
+                    if (!resolvedDate && s.quizId) {
+                        const matchedQuiz = appState.quizzes.find(q => q.id === s.quizId);
+                        if (matchedQuiz) resolvedDate = matchedQuiz.date;
+                    }
+                    if (!resolvedDate) return; // can't place this submission
+                    // Also ensure the quizId cross-links correctly even if stored differently
+                    if (!s.quizId) {
+                        const matchedQuiz = appState.quizzes.find(q => q.date === resolvedDate);
+                        if (matchedQuiz) s.quizId = matchedQuiz.id;
+                    }
+                    if (!subByDate[resolvedDate]) {
+                        subByDate[resolvedDate] = { ...s, quizDate: resolvedDate };
+                    }
                 });
 
             // All deduped submissions for this participant
@@ -3024,14 +3165,24 @@
             const quizDate = quiz.date;
 
             // FINAL GUARD: Strict one-submission-per-phone-per-quiz
+            // Exception: makeup sessions are allowed to overwrite previous submissions.
             const alreadySubmitted = appState.submissions.find(s =>
                 normalizePhone(s.participantPhone) === normPhone && (s.quizId ? s.quizId === quiz.id : s.quizDate === quizDate)
             );
-            if (alreadySubmitted) {
+            if (alreadySubmitted && !appState.isMakeupSession) {
                 showToast('You have already submitted this quiz. Opening your profile.', 'info');
                 appState.selectedReviewQuizId = alreadySubmitted.quizId;
                 switchView('studentDashboard');
                 return;
+            }
+            // In makeup mode, remove any lingering old submission before saving the new one
+            if (alreadySubmitted && appState.isMakeupSession) {
+                appState.submissions = appState.submissions.filter(s => s.id !== alreadySubmitted.id);
+                if (appState.isLiveSupabase && appState.supabaseClient) {
+                    try {
+                        await appState.supabaseClient.from('submissions').delete().eq('id', alreadySubmitted.id);
+                    } catch(e) { console.warn('Could not delete old makeup submission from DB:', e); }
+                }
             }
 
             if (!Array.isArray(quiz.questions) || quiz.questions.length === 0) {
@@ -3438,6 +3589,23 @@
         function renderAdminQuizzes() {
             const container = document.getElementById('adminQuizzesList');
             if (!container) return;
+
+            // Also populate the makeup quiz date selector
+            const makeupSelect = document.getElementById('makeupQuizSelect');
+            if (makeupSelect) {
+                const prevVal = makeupSelect.value;
+                makeupSelect.innerHTML = '<option value="">-- Choose a quiz --</option>';
+                [...appState.quizzes]
+                    .sort((a, b) => (a.date > b.date ? 1 : -1))
+                    .forEach((q, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = q.id;
+                        opt.textContent = `Quiz ${idx + 1}: ${q.date} — ${q.title}`;
+                        makeupSelect.appendChild(opt);
+                    });
+                makeupSelect.value = prevVal;
+                previewMakeupLink();
+            }
             container.innerHTML = '';
 
             const sorted = [...appState.quizzes].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -3489,6 +3657,70 @@
         function selectAndCopyShareUrl(el, text) {
             copyToClipboard(text);
         }
+
+        // ── MAKEUP QUIZ LINK GENERATOR ───────────────────────────────────
+        function getMakeupUrl() {
+            const sel = document.getElementById('makeupQuizSelect');
+            if (!sel || !sel.value) return null;
+            const quiz = appState.quizzes.find(q => q.id === sel.value);
+            if (!quiz) return null;
+            return `${window.location.origin}${window.location.pathname}?quizId=${encodeURIComponent(quiz.id)}&date=${encodeURIComponent(quiz.date)}&makeup=1`;
+        }
+
+        function previewMakeupLink() {
+            const sel     = document.getElementById('makeupQuizSelect');
+            const preview = document.getElementById('makeupLinkPreview');
+            const box     = document.getElementById('makeupQuizPreviewBox');
+            const copyBtn = document.getElementById('makeupCopyBtn');
+            const shareBtn= document.getElementById('makeupShareBtn');
+
+            if (!sel || !sel.value) {
+                if (preview)  preview.innerText       = 'Select a quiz above…';
+                if (box)      box.classList.add('hidden');
+                if (copyBtn)  copyBtn.disabled        = true;
+                if (shareBtn) shareBtn.disabled       = true;
+                return;
+            }
+
+            const quiz = appState.quizzes.find(q => q.id === sel.value);
+            if (!quiz) return;
+
+            const url = getMakeupUrl();
+            if (preview)  preview.innerText           = url;
+            if (copyBtn)  copyBtn.disabled            = false;
+            if (shareBtn) shareBtn.disabled           = false;
+
+            if (box) {
+                box.classList.remove('hidden');
+                const allSorted = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
+                const num = allSorted.findIndex(q => q.id === quiz.id) + 1;
+                document.getElementById('makeupPreviewTitle').innerText =
+                    `Quiz ${num}: ${quiz.title}`;
+                document.getElementById('makeupPreviewDate').innerText  = quiz.date;
+                document.getElementById('makeupPreviewQCount').innerText =
+                    `${quiz.questions.length} question${quiz.questions.length !== 1 ? 's' : ''} · Makeup link — participants can resubmit once`;
+            }
+        }
+
+        function copyMakeupLink() {
+            const url = getMakeupUrl();
+            if (!url) { showToast('Please select a quiz first', 'error'); return; }
+            copyToClipboard(url);
+        }
+
+        function shareMakeupLink() {
+            const url = getMakeupUrl();
+            if (!url) { showToast('Please select a quiz first', 'error'); return; }
+            const sel  = document.getElementById('makeupQuizSelect');
+            const quiz = sel && sel.value ? appState.quizzes.find(q => q.id === sel.value) : null;
+            const allSorted = [...appState.quizzes].sort((a, b) => (a.date > b.date ? 1 : -1));
+            const num  = quiz ? allSorted.findIndex(q => q.id === quiz.id) + 1 : '?';
+            const madrasaName = (appState.appSettings && (appState.appSettings.madrasaName || appState.appSettings.madrasaname)) || 'Madrasa';
+            const msg  = `Assalamu Alaikum 🌙\n\n*${madrasaName} — Makeup Quiz Link*\n\nQuiz ${num}: ${quiz ? quiz.date : ''}\n📎 ${url}\n\nUse this link to submit your answers for the missed quiz. Your result will be saved automatically under the original quiz date. JazakAllah Khair!`;
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+        // ── END MAKEUP FUNCTIONS ─────────────────────────────────────────
 
         
         async function deleteSubmission(id) {
