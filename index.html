@@ -2985,11 +2985,11 @@
 
                 let optionsHtml = q.options.map((opt, oIdx) => {
                     let optClass = 'bg-slate-50 border-slate-200 text-slate-600';
-                    if (oIdx === q.correctIndex) optClass = 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
+                    if (oIdx === q.correctIndex) optClass = quiz.isGrandQuiz ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-emerald-100 border-emerald-300 text-emerald-900 font-bold';
 
                     return `<div class="px-3 py-2 rounded-lg border text-xs ${optClass} flex items-center justify-between">
                         <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
-                        ${oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
+                        ${!quiz.isGrandQuiz && oIdx === q.correctIndex ? '<span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-semibold">Correct Answer</span>' : ''}
                     </div>`;
                 }).join('');
 
